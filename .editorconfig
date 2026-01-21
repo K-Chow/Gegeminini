@@ -1,0 +1,52 @@
+# http://editorconfig.org
+
+# 配置文件的根目录
+root = true
+
+# 全局设置，应用于所有文件
+[*]
+# 缩进方式：space 或 tab
+indent_style = space
+# 缩进大小，通常为 2 或 4
+indent_size = 2
+# 结束行尾的空白字符是否移除
+trim_trailing_whitespace = true
+# 文本文件的末尾是否强制保留一个空行
+insert_final_newline = true
+# 文件的编码格式
+charset = utf-8
+# 换行符类型：lf, crlf, cr
+end_of_line = lf
+
+# 针对特定文件类型进行配置
+# JavaScript 和 TypeScript 文件，包括 React 组件
+[*.{js,ts,jsx,tsx}]
+# 建议 JavaScript/TypeScript 使用 2 个空格的缩进
+indent_size = 2
+
+# CSS, Less, Sass 和 SCSS 文件
+[*.{css,less,sass,scss}]
+# 建议 CSS 使用 2 个空格的缩进
+indent_size = 2
+
+# HTML, Vue, Svelte, Pug 等模板文件
+[*.{html,vue,svelte,pug}]
+# 建议模板文件使用 2 个空格的缩进
+indent_size = 2
+
+# YAML 和 JSON 文件
+[*.{yml,yaml,json}]
+# 建议配置文件使用 2 个空格的缩进
+indent_size = 2
+
+# Markdown 文件
+[*.md]
+# Markdown 文件通常使用 4 个空格的缩进
+indent_size = 4
+# 不移除行尾的空格，因为这可能会影响换行显示
+trim_trailing_whitespace = false
+
+# 某些特定文件或目录不遵循规则
+[*.min.*]
+insert_final_newline = false
+trim_trailing_whitespace = false
