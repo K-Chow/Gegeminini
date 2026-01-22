@@ -1,6 +1,9 @@
+import Home from '@/pages/home'
+
 const routes = [
   {
-    home: '/'
+    home: '/',
+    Element: <Home />
   }
 ]
 
