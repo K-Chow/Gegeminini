@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+@plugin "daisyui";
+
+@theme {
+  --font-sans: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+:root {
+  font-family: var(--font-sans);
+}
+@theme {
+  --spacing-main-content: calc(100vh - 4rem);
+}

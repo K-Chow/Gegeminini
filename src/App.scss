@@ -1,0 +1,14 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  overflow: hidden;
+}
+
+#root {
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: oklch(var(--b1));
+  border: 1px solid oklch(var(--bc) / 0.1);
+}
