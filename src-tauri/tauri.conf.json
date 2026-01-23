@@ -10,11 +10,18 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
+        "label": "main",
         "title": "Gegeminini",
-        "width": 800,
-        "height": 600
+        "width": 1280,
+        "height": 720,
+        "fullscreen": false,
+        "decorations": false,
+        "titleBarStyle": "Overlay",
+        "transparent": true,
+        "shadow": true
       }
     ],
     "security": {
