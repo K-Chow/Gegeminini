@@ -19,6 +19,7 @@
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.12.0",
     "rxjs": "^7.8.2",
+    "swr": "^2.3.8",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
@@ -30,13 +31,13 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "daisyui": "^5.5.14",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.26",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
-    "daisyui": "^5.5.14",
     "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",

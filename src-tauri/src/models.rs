@@ -14,3 +14,9 @@ pub struct Chat {
     pub content_type: String,
     pub timestamp: String,
 }
+
+#[derive(Serialize)]
+pub struct CommandResult {
+    pub status: u16,
+    pub message: String,
+}
