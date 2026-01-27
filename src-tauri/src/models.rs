@@ -1,9 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Config {
+pub struct ApiConfigItem {
     pub app: String,
     pub api_key: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct SysConfig {
+    pub theme: String,
+    pub current_app: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
