@@ -1,9 +1,9 @@
 mod config;
+mod constants;
 mod models;
 mod request;
-use std::sync::Arc;
-
 use crate::config::init_db;
+use std::sync::Arc;
 
 pub struct AppState {
     pub db: Arc<sled::Db>,
@@ -13,7 +13,7 @@ pub struct AppState {
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            init_db(app);
+            let _db = init_db(app);
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())

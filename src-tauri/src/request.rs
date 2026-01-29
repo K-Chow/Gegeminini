@@ -1,16 +1,20 @@
-use crate::models::{ApiConfigItem, CommandResult, SysConfig};
+use crate::constants::{GEMINI_URL, GEMINI_VERSION};
+use crate::models::{ApiConfigItem, SysConfig};
 use crate::AppState;
 use reqwest::Client;
 
 #[tauri::command]
-pub async fn api_request(state: tauri::State<'_, AppState>) -> Result<Vec<CommandResult>, String> {
-    let current_app = state
+pub async fn api_request(
+    state: tauri::State<'_, AppState>,
+    contents: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let current_app: String = state
         .db
         .get("config:sys")
         .map_err(|e| e.to_string())?
         .and_then(|bytes| bincode::deserialize(&bytes).ok())
         .map(|config: SysConfig| config.current_app)
-        .ok_or_else(|| "".to_string())?;
+        .ok_or_else(|| format!("sys config is not found"))?;
 
     let api_key = state
         .db
@@ -18,24 +22,25 @@ pub async fn api_request(state: tauri::State<'_, AppState>) -> Result<Vec<Comman
         .map_err(|e| e.to_string())?
         .and_then(|bytes| bincode::deserialize(&bytes).ok())
         .map(|item: ApiConfigItem| item.api_key)
-        .ok_or_else(|| "".to_string())?;
+        .ok_or_else(|| format!("{} api key is not found", current_app))?;
 
     let client = Client::new();
 
-    let url = format!(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={}",
-        api_key
-    );
+    let url = format!("{}/{}:generateContent", GEMINI_URL, GEMINI_VERSION);
 
-    let resule = client
+    let payload = serde_json::json!({
+      "contents": contents
+    });
+
+    let response = client
         .post(url)
-        .json("{}")
+        .header("x-goog-api-key", api_key)
+        .json(&payload)
         .send()
         .await
         .map_err(|e| e.to_string())?;
 
-    Ok(vec![CommandResult {
-        status: 200,
-        message: format!("OK"),
-    }])
+    let result = response.json().await.map_err(|e| e.to_string())?;
+
+    Ok(result)
 }

@@ -13,7 +13,7 @@ pub struct SysConfig {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Chat {
+pub struct _Chat {
     pub app: String,
     pub role: String,
     pub content: String,
@@ -25,4 +25,19 @@ pub struct Chat {
 pub struct CommandResult {
     pub status: u16,
     pub message: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct _Part {
+    pub text: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct _Content {
+    pub parts: Vec<_Part>,
+}
+
+#[derive(Serialize)]
+pub struct _GeminiRequest {
+    pub contents: Vec<_Content>,
 }

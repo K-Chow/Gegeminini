@@ -4,7 +4,8 @@ use sled::Batch;
 use std::sync::Arc;
 use tauri::{App, Manager};
 
-pub async fn init_db(app: &mut App) -> Result<(), String> {
+pub fn init_db(app: &mut App) -> Result<(), String> {
+    println!(" ---- 数据库初始化开始 ----");
     let app_data_dir = app.path().app_data_dir().expect("无法获取路径");
     std::fs::create_dir_all(&app_data_dir).ok();
 
@@ -22,6 +23,7 @@ pub async fn init_db(app: &mut App) -> Result<(), String> {
         db_arc.flush().map_err(|e| e.to_string())?;
     }
 
+    println!(" ---- 数据库初始化完成 ----");
     Ok(())
 }
 
