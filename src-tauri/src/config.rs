@@ -1,8 +1,23 @@
 use crate::models::{ApiConfigItem, CommandResult, SysConfig};
 use crate::AppState;
-use sled::Batch;
+use sled::{Batch, Db};
 use std::sync::Arc;
 use tauri::{App, Manager};
+
+pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
+    let key = format!("config:gemini");
+
+    if state.db.get(&key).unwrap().is_none() {
+        let default_val = bincode::serialize("").map_err(|e| e.to_string())?;
+
+        state
+            .db
+            .insert(key, default_val)
+            .map_err(|e| e.to_string())?;
+        state.db.flush().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
 
 pub fn init_db(app: &mut App) -> Result<(), String> {
     println!(" ---- 数据库初始化开始 ----");
@@ -15,13 +30,6 @@ pub fn init_db(app: &mut App) -> Result<(), String> {
 
     // 3. 注入到全局状态
     app.manage(AppState { db: db_arc.clone() });
-
-    let key = format!("config:gemini");
-
-    if db_arc.get(&key).unwrap().is_none() {
-        db_arc.insert(&key, "").map_err(|e| e.to_string())?;
-        db_arc.flush().map_err(|e| e.to_string())?;
-    }
 
     println!(" ---- 数据库初始化完成 ----");
     Ok(())
