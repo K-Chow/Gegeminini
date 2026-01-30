@@ -1,4 +1,5 @@
 import { windowClose, windowMinimize } from '@/utils/app'
+import { useEffect, useState } from 'react'
 import {
   ArrowLeftCircleIcon,
   XMarkIcon,
@@ -7,16 +8,46 @@ import {
   SunIcon
 } from '@heroicons/react/24/outline'
 
+import { invoke } from '@tauri-apps/api/core'
+
 type HeaderProps = {
   isOpen: boolean
   onToggleDrawer: () => void
 }
 
+type SysConfig = {
+  theme?: string
+  current_app?: string
+}
+
 const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
+  const [sysConfig, setSysConfig] = useState<SysConfig>({})
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const theme = e.target.checked ? 'dark' : 'light'
-    document.documentElement.setAttribute('data-theme', theme)
+    setSysConfig({
+      ...sysConfig,
+      theme: e.target.checked ? 'dark' : 'light'
+    })
   }
+
+  const getSysConfig = () => {
+    invoke('get_sys_config')
+      .then(res => {
+        setSysConfig(res as SysConfig)
+      })
+      .catch(err => console.log(err))
+  }
+
+  useEffect(() => {
+    getSysConfig()
+  }, [])
+
+  useEffect(() => {
+    const { theme } = sysConfig
+    if (theme) {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+  }, [sysConfig])
+
   return (
     <header
       data-tauri-drag-region
