@@ -1,21 +1,37 @@
 use crate::models::{ApiConfigItem, CommandResult, SysConfig};
 use crate::AppState;
-use sled::{Batch, Db};
+use sled::Batch;
 use std::sync::Arc;
 use tauri::{App, Manager};
 
 pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
-    let key = format!("config:gemini");
-
-    if state.db.get(&key).unwrap().is_none() {
-        let default_val = bincode::serialize("").map_err(|e| e.to_string())?;
-
-        state
-            .db
-            .insert(key, default_val)
-            .map_err(|e| e.to_string())?;
-        state.db.flush().map_err(|e| e.to_string())?;
+    enum InitList {
+        SystemConfig(SysConfig),
+        ApiConfig(ApiConfigItem),
     }
+    let data = vec![
+        (
+            "config:system",
+            InitList::SystemConfig(SysConfig::default()),
+        ),
+        (
+            "config:app:gemini",
+            InitList::ApiConfig(ApiConfigItem::default()),
+        ),
+    ];
+
+    for item in data {
+        let (key, value) = item;
+        if state.db.get(key).unwrap().is_none() {
+            let bytes = match value {
+                InitList::SystemConfig(sys) => bincode::serialize(&sys),
+                InitList::ApiConfig(api) => bincode::serialize(&api),
+            }
+            .map_err(|e| e.to_string())?;
+            state.db.insert(key, bytes).map_err(|e| e.to_string())?;
+        }
+    }
+    state.db.flush().map_err(|e| e.to_string())?;
     Ok(())
 }
 
