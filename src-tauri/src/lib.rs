@@ -16,7 +16,8 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             let _db: Result<(), String> = init_db(app);
-            let _init_data = init_data(app.state());
+            let state = app.state();
+            let _init_data = init_data(state);
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
