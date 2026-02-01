@@ -5,8 +5,10 @@ import {
   XMarkIcon,
   MinusIcon,
   MoonIcon,
-  SunIcon
+  SunIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline'
+import { useNavigate } from 'react-router-dom'
 
 import { invoke } from '@tauri-apps/api/core'
 
@@ -21,6 +23,7 @@ type SysConfig = {
 }
 
 const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
+  const navigate = useNavigate()
   const [sysConfig, setSysConfig] = useState<SysConfig>({})
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const config = {
@@ -39,6 +42,10 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
         setSysConfig(res as SysConfig)
       })
       .catch(err => console.log(err))
+  }
+
+  const handleNavToSettings = () => {
+    navigate('/settings')
   }
 
   useEffect(() => {
@@ -82,7 +89,9 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
             <MoonIcon className="w-5 h-5 swap-off" />
             <SunIcon className="w-5 h-5 swap-on" />
           </label>
-
+          <button className="w-6 h-6 btn btn-ghost btn-circle mr-2">
+            <Cog6ToothIcon className="w-5 -5" onClick={handleNavToSettings} />
+          </button>
           <button
             className="w-6 h-6 btn btn-ghost btn-circle mr-2"
             onClick={() => windowMinimize()}
