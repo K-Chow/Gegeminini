@@ -95,7 +95,7 @@ pub async fn save_api_config(
 }
 
 #[tauri::command]
-pub async fn save_sys_config(
+pub async fn set_sys_config(
     state: tauri::State<'_, AppState>,
     config: SysConfig,
 ) -> Result<CommandResult, String> {

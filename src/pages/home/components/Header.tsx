@@ -47,6 +47,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
 
   useEffect(() => {
     const { theme } = sysConfig
+    console.log(sysConfig)
     if (theme) {
       document.documentElement.setAttribute('data-theme', theme)
     }

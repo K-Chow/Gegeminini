@@ -25,7 +25,7 @@ pub fn run() {
             request::api_request,
             config::get_api_config,
             config::save_api_config,
-            config::save_sys_config,
+            config::set_sys_config,
             config::get_sys_config
         ])
         .run(tauri::generate_context!())
