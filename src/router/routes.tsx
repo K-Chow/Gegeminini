@@ -15,6 +15,10 @@ const routes = [
         element: <Chat />
       },
       {
+        path: 'settings',
+        element: <div>Settings Page</div>
+      },
+      {
         path: '*',
         element: <Navigate to="chat" replace />
       }

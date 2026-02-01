@@ -1,5 +1,5 @@
 import { windowClose, windowMinimize } from '@/utils/app'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   ArrowLeftCircleIcon,
   XMarkIcon,
@@ -18,13 +18,16 @@ type HeaderProps = {
 }
 
 type SysConfig = {
-  theme?: string
-  current_app?: string
+  theme: string
+  current_app: string
 }
 
 const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
   const navigate = useNavigate()
-  const [sysConfig, setSysConfig] = useState<SysConfig>({})
+  const [sysConfig, setSysConfig] = useState<SysConfig>({
+    theme: 'light',
+    current_app: 'gemini'
+  })
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const config = {
       ...sysConfig,
@@ -48,17 +51,20 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
     navigate('/settings')
   }
 
+  const isDarkTheme = useMemo(
+    () => sysConfig.theme === 'dark',
+    [sysConfig.theme]
+  )
+
   useEffect(() => {
     getSysConfig()
   }, [])
 
   useEffect(() => {
-    const { theme } = sysConfig
-    console.log(sysConfig)
-    if (theme) {
-      document.documentElement.setAttribute('data-theme', theme)
+    if (sysConfig.theme) {
+      document.documentElement.setAttribute('data-theme', sysConfig.theme)
     }
-  }, [sysConfig])
+  }, [sysConfig.theme])
 
   return (
     <header
@@ -82,15 +88,18 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
           <label className="swap swap-rotate mr-2">
             <input
               type="checkbox"
-              value="dark"
+              checked={isDarkTheme}
               onChange={handleThemeChange}
               className="theme-controller"
             />
             <MoonIcon className="w-5 h-5 swap-off" />
             <SunIcon className="w-5 h-5 swap-on" />
           </label>
-          <button className="w-6 h-6 btn btn-ghost btn-circle mr-2">
-            <Cog6ToothIcon className="w-5 -5" onClick={handleNavToSettings} />
+          <button
+            className="w-6 h-6 btn btn-ghost btn-circle mr-2"
+            onClick={() => handleNavToSettings()}
+          >
+            <Cog6ToothIcon className="w-5 h-5" />
           </button>
           <button
             className="w-6 h-6 btn btn-ghost btn-circle mr-2"
