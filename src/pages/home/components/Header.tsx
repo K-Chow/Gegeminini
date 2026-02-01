@@ -23,10 +23,14 @@ type SysConfig = {
 const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
   const [sysConfig, setSysConfig] = useState<SysConfig>({})
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSysConfig({
+    const config = {
       ...sysConfig,
       theme: e.target.checked ? 'dark' : 'light'
-    })
+    }
+
+    invoke('set_sys_config', { config })
+      .then(() => setSysConfig(config))
+      .catch(err => console.log(err))
   }
 
   const getSysConfig = () => {
