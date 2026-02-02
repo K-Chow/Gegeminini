@@ -2,7 +2,7 @@ mod config;
 mod constants;
 mod models;
 mod request;
-use tauri::{Manager, State};
+use tauri::Manager;
 
 use crate::config::{init_data, init_db};
 use std::sync::Arc;

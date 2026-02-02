@@ -51,6 +51,10 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
     navigate('/settings')
   }
 
+  const handleNavToChat = () => {
+    navigate('/chat')
+  }
+
   const isDarkTheme = useMemo(
     () => sysConfig.theme === 'dark',
     [sysConfig.theme]
@@ -81,7 +85,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
         />
       </button>
       <div className="flex items-center justify-between">
-        <div className="avatar mr-12">
+        <div className="avatar mr-12" onClick={() => handleNavToChat()}>
           <div className="ring-neutral ring-offset-base-100 w-8 rounded-full ring-1 ring-offset-1 bg-primary-content"></div>
         </div>
         <div className="flex items-center justify-end">
