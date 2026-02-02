@@ -11,4 +11,5 @@ body {
   overflow: hidden;
   background-color: oklch(var(--b1));
   border: 1px solid oklch(var(--bc) / 0.1);
+  box-shadow: 12px 12px 24px oklch(var(--bc) / 0.1);
 }

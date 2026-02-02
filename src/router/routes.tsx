@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import Home from '@/pages/home'
 import Chat from '@/pages/chat'
+import Settings from '@/pages/settings'
 const routes = [
   {
     path: '/',
@@ -16,7 +17,7 @@ const routes = [
       },
       {
         path: 'settings',
-        element: <div>Settings Page</div>
+        element: <Settings />
       },
       {
         path: '*',
