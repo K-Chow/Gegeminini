@@ -6,10 +6,19 @@ pub struct ApiConfigItem {
     pub api_key: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SysConfig {
     pub theme: String,
     pub current_app: String,
+}
+
+impl Default for SysConfig {
+    fn default() -> Self {
+        Self {
+            theme: "light".to_string(),
+            current_app: "gemini".to_string(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

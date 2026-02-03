@@ -121,6 +121,8 @@ pub async fn get_sys_config(state: tauri::State<'_, AppState>) -> Result<SysConf
         .db
         .get("config:sys")
         .map_err(|e| e.to_string())? // 处理数据库读取错误
-        .map(|bytes| bincode::deserialize(&bytes).map_err(|e| e.to_string())) // 尝试反序列化
+        .map(|bytes| {
+            bincode::deserialize(&bytes).map_err(|e: Box<bincode::ErrorKind>| e.to_string())
+        }) // 尝试反序列化
         .unwrap_or_else(|| Ok(SysConfig::default())) // 如果是 None 则返回默认值
 }
