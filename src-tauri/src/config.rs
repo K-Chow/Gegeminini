@@ -1,5 +1,6 @@
 use crate::models::{ApiConfigItem, CommandResult, SysConfig};
 use crate::AppState;
+use serde_json::json;
 use sled::Batch;
 use std::sync::Arc;
 use tauri::{App, Manager};
@@ -73,6 +74,8 @@ pub async fn save_api_config(
     configs: Vec<ApiConfigItem>,
 ) -> Result<CommandResult, String> {
     let mut batch = Batch::default();
+
+    println!("Saving config for app: {}", json!(configs));
 
     for config in configs {
         if config.app.is_empty() {
