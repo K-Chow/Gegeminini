@@ -28,6 +28,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
     theme: 'light',
     current_app: 'gemini'
   })
+
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const config = {
       ...sysConfig,

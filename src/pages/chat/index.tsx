@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react'
+import { useKey } from 'react-use'
 
 type ChatMessage = {
   text: string
@@ -8,13 +9,18 @@ type ChatMessage = {
 }
 
 const ChatContainer = () => {
-  const [text, setText] = useState('')
+  const [isLoading, setLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const handleInput = async (e: ChangeEvent<HTMLInputElement>) => {
-    await setText(e.currentTarget.value)
-  }
+  const inputEl = useRef<HTMLInputElement>(null)
 
   const handleSend = () => {
+    const text = inputEl.current?.value || ''
+    if (!text) {
+      return
+    }
+
+    setLoading(true)
+
     invoke('api_request', {
       contents: [
         {
@@ -37,9 +43,17 @@ const ChatContainer = () => {
             }))
           )
         )
+        inputEl.current!.value = ''
       })
       .catch(e => console.log(e))
+      .finally(() => setLoading(false))
   }
+
+  useKey('Enter', () => handleSend(), {
+    event: 'keydown',
+    target: window
+  })
+
   return (
     <section className="max-h-full flex flex-col h-screen">
       <div className="grow overflow-y-auto p-4 space-y-4 bg-base-200">
@@ -55,8 +69,8 @@ const ChatContainer = () => {
       <div className="flex-none p-4 border-base-300 flex items-center gap-4">
         <input
           className="w-full bg-base-100 border border-base-300 rounded-field p-2"
-          value={text}
-          onChange={handleInput}
+          disabled={isLoading}
+          ref={inputEl}
         />
         <button className="btn btn-primary" onClick={handleSend}>
           Send
