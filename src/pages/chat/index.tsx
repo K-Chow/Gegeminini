@@ -1,6 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react'
-import { useKey } from 'react-use'
+import { useRef, useState } from 'react'
 
 type ChatMessage = {
   text: string
@@ -19,7 +18,10 @@ const ChatContainer = () => {
       return
     }
 
+    inputEl.current!.value = ''
+
     setLoading(true)
+    setMessages(prev => [...prev, { text, role: 'USER', time: Date.now() }])
 
     invoke('api_request', {
       contents: [
@@ -33,26 +35,19 @@ const ChatContainer = () => {
       ]
     })
       .then(result => {
-        const { candidates } = result as any
-        setMessages(
-          messages.concat([{ text, role: 'USER', time: Date.now() }]).concat(
-            candidates.map((item: any) => ({
-              text: item.content.parts.map(({ text }: any) => text).join('\n'),
-              role: 'ASSISTANT',
-              time: Date.now()
-            }))
-          )
-        )
-        inputEl.current!.value = ''
+        const { candidates = [] } = result as any
+        setMessages(prev => [
+          ...prev,
+          ...candidates.map((item: any) => ({
+            text: item.content.parts.map(({ text }: any) => text).join('\n'),
+            role: 'ASSISTANT',
+            time: Date.now()
+          }))
+        ])
       })
       .catch(e => console.log(e))
       .finally(() => setLoading(false))
   }
-
-  useKey('Enter', () => handleSend(), {
-    event: 'keydown',
-    target: window
-  })
 
   return (
     <section className="max-h-full flex flex-col h-screen">
@@ -66,16 +61,32 @@ const ChatContainer = () => {
           </div>
         ))}
       </div>
-      <div className="flex-none p-4 border-base-300 flex items-center gap-4">
-        <input
-          className="w-full bg-base-100 border border-base-300 rounded-field p-2"
-          disabled={isLoading}
-          ref={inputEl}
-        />
-        <button className="btn btn-primary" onClick={handleSend}>
-          Send
-        </button>
-      </div>
+
+      <form
+        onSubmit={e => {
+          e.preventDefault()
+          handleSend()
+        }}
+      >
+        <div className="flex-none p-4 border-base-300 flex items-center gap-4">
+          <input
+            className="w-full bg-base-100 border border-base-300 rounded-field p-2"
+            readOnly={isLoading}
+            ref={inputEl}
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleSend}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="loading loading-bars  loading-md" />
+            ) : (
+              '发送'
+            )}
+          </button>
+        </div>
+      </form>
     </section>
   )
 }
