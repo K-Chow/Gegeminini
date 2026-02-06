@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 type ChatMessage = {
   text: string
@@ -75,7 +75,7 @@ const ChatContainer = () => {
                         PreTag="div"
                         children={String(children).replace(/\n$/, '')}
                         language={match[1]}
-                        style={prism}
+                        style={materialDark}
                       />
                     ) : (
                       <code {...rest} className={className}>
