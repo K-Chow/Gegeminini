@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -15,6 +15,7 @@ const ChatContainer = () => {
   const [isLoading, setLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const inputEl = useRef<HTMLInputElement>(null)
+  const chatEl = useRef<HTMLDivElement>(null)
 
   const handleSend = () => {
     const text = inputEl.current?.value || ''
@@ -53,9 +54,21 @@ const ChatContainer = () => {
       .finally(() => setLoading(false))
   }
 
+  useEffect(() => {
+    if (messages.length && chatEl.current) {
+      chatEl.current.scrollTo({
+        top: chatEl.current.scrollHeight,
+        behavior: 'smooth'
+      })
+    }
+  }, [messages, chatEl])
+
   return (
     <section className="max-h-full flex flex-col h-screen">
-      <div className="grow overflow-y-auto p-4 space-y-4 bg-base-200">
+      <div
+        className="grow overflow-y-auto p-4 space-y-4 bg-base-200"
+        ref={chatEl}
+      >
         {messages.map((message, index) => (
           <div
             className={`chat ${message.role === 'USER' ? 'chat-end' : 'chat-start'}`}
