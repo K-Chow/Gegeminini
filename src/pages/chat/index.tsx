@@ -1,5 +1,9 @@
 import { invoke } from '@tauri-apps/api/core'
 import { useRef, useState } from 'react'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 type ChatMessage = {
   text: string
@@ -57,7 +61,31 @@ const ChatContainer = () => {
             className={`chat ${message.role === 'USER' ? 'chat-end' : 'chat-start'}`}
             key={`message-${index}`}
           >
-            <div className="chat-bubble">{message.text}</div>
+            <div className="chat-bubble">
+              <Markdown
+                children={message.text}
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code(props) {
+                    const { children, className, node, ...rest } = props
+                    const match = /language-(\w+)/.exec(className || '')
+                    return match ? (
+                      <SyntaxHighlighter
+                        {...rest}
+                        PreTag="div"
+                        children={String(children).replace(/\n$/, '')}
+                        language={match[1]}
+                        style={prism}
+                      />
+                    ) : (
+                      <code {...rest} className={className}>
+                        {children}
+                      </code>
+                    )
+                  }
+                }}
+              ></Markdown>
+            </div>
           </div>
         ))}
       </div>
