@@ -85,9 +85,21 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
           className={`w-8 h-8 transition-all duration-500 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
+
       <div className="flex items-center justify-between">
-        <div className="avatar mr-12" onClick={() => handleNavToChat()}>
-          <div className="ring-neutral ring-offset-base-100 w-8 rounded-full ring-1 ring-offset-1 bg-primary-content"></div>
+        <div className="dropdown mr-12">
+          <div tabIndex={0} className="avatar">
+            <div className="ring-neutral ring-offset-base-100 w-8 rounded-full ring-1 ring-offset-1 bg-primary-content"></div>
+          </div>
+
+          <ul
+            tabIndex={-1}
+            className="menu dropdown-content bg-base-100 rounded-box z-1 w-46 p-2 shadow-sm mt-2"
+          >
+            <li>
+              <a onClick={() => handleNavToChat()}>Gemini</a>
+            </li>
+          </ul>
         </div>
         <div className="flex items-center justify-end">
           <label className="swap swap-rotate mr-2">
