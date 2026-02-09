@@ -52,8 +52,18 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
     navigate('/settings')
   }
 
-  const handleNavToChat = () => {
-    navigate('/chat')
+  const handleChangeApp = (app: string) => {
+    const config = {
+      ...sysConfig,
+      current_app: app
+    }
+
+    invoke('set_sys_config', { config })
+      .then(() => {
+        setSysConfig(config)
+        navigate('/chat')
+      })
+      .catch(err => console.log(err))
   }
 
   const isDarkTheme = useMemo(
@@ -94,10 +104,10 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
 
           <ul
             tabIndex={-1}
-            className="menu dropdown-content bg-base-100 rounded-box z-1 w-46 p-2 shadow-sm mt-2"
+            className="menu dropdown-content bg-base-100 rounded-box z-1 w-46 p-2 shadow-sm mt-4"
           >
             <li>
-              <a onClick={() => handleNavToChat()}>Gemini</a>
+              <a onClick={() => handleChangeApp('gemini')}>Gemini</a>
             </li>
           </ul>
         </div>
