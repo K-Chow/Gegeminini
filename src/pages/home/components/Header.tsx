@@ -43,6 +43,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
   const getSysConfig = () => {
     invoke('get_sys_config')
       .then(res => {
+        console.log(res)
         setSysConfig(res as SysConfig)
       })
       .catch(err => console.log(err))

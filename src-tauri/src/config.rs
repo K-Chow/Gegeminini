@@ -21,14 +21,14 @@ pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
         ),
     ];
 
-    for item in data {
-        let (key, value) = item;
+    for (key, value) in data {
         if state.db.get(key).unwrap().is_none() {
             let bytes = match value {
                 InitList::SystemConfig(sys) => bincode::serialize(&sys),
                 InitList::ApiConfig(api) => bincode::serialize(&api),
             }
             .map_err(|e| e.to_string())?;
+
             state.db.insert(key, bytes).map_err(|e| e.to_string())?;
         }
     }
@@ -58,7 +58,7 @@ pub async fn get_api_config(
 ) -> Result<Vec<ApiConfigItem>, String> {
     let mut list: Vec<ApiConfigItem> = Vec::new();
 
-    for item in state.db.scan_prefix("config:") {
+    for item in state.db.scan_prefix("config:app:") {
         let (_key, value) = item.map_err(|e: sled::Error| e.to_string())?;
         let config = bincode::deserialize(&value).map_err(|e| e.to_string())?;
         list.push(config);
@@ -82,7 +82,7 @@ pub async fn save_api_config(
             return Err("App name cannot be empty".into());
         }
 
-        let key = format!("config:api:{}", config.app);
+        let key = format!("config:app:{}", config.app);
         let value = bincode::serialize(&config).map_err(|e| e.to_string())?;
 
         batch.insert(key.as_str(), value);
@@ -106,7 +106,7 @@ pub async fn set_sys_config(
 
     state
         .db
-        .insert("config:sys", data)
+        .insert("config:system", data)
         .map_err(|e| e.to_string())?;
 
     Ok(CommandResult {
@@ -119,7 +119,7 @@ pub async fn set_sys_config(
 pub async fn get_sys_config(state: tauri::State<'_, AppState>) -> Result<SysConfig, String> {
     state
         .db
-        .get("config:sys")
+        .get("config:system")
         .map_err(|e| e.to_string())? // 处理数据库读取错误
         .map(|bytes| {
             bincode::deserialize(&bytes).map_err(|e: Box<bincode::ErrorKind>| e.to_string())

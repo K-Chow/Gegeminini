@@ -19,6 +19,7 @@ const Settings = () => {
   const getSysConfig = () => {
     invoke('get_api_config')
       .then(res => {
+        console.log(res)
         setApiConfigs(res as ApiConfig[])
       })
       .catch(err => console.log(err))

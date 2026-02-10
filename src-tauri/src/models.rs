@@ -1,9 +1,17 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiConfigItem {
     pub app: String,
     pub api_key: String,
+}
+impl Default for ApiConfigItem {
+    fn default() -> Self {
+        Self {
+            app: "gemini".to_string(),
+            api_key: "".to_string(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
