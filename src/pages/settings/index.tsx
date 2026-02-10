@@ -1,39 +1,70 @@
-import { useState, type ChangeEvent } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 
+type ApiConfig = {
+  app: string
+  api_key: string
+}
+
 const Settings = () => {
-  const [apiKey, setApikey] = useState('')
-  const handleApiKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setApikey(e.target.value)
+  const [apiConfigs, setApiConfigs] = useState<ApiConfig[]>([])
+  const handleApiKeyChange = (app: string, value: string) => {
+    setApiConfigs(prev =>
+      prev.map(config =>
+        config.app === app ? { ...config, api_key: value } : config
+      )
+    )
   }
 
-  const handleSaveApiKey = () => {
+  const getSysConfig = () => {
+    invoke('get_api_config')
+      .then(res => {
+        setApiConfigs(res as ApiConfig[])
+      })
+      .catch(err => console.log(err))
+  }
+
+  const handleSaveApiKey = (app: string) => {
+    const currentConfig = apiConfigs.find(config => config.app === app)
     invoke('save_api_config', {
-      configs: [{ app: 'gemini', api_key: apiKey }]
+      configs: [currentConfig]
     })
       .then(result => console.log(result))
       .catch(err => console.log(err))
   }
 
+  useEffect(() => {
+    getSysConfig()
+  }, [])
+
   return (
     <section className="p-4">
       <h2 className="mb-8 text-2xl">设置</h2>
-      <div className="collapse collapse-arrow bg-base-100 border border-base-300">
-        <input type="radio" name="my-accordion-2" defaultChecked />
-        <div className="collapse-title font-semibold">Gemini</div>
-        <div className="collapse-content text-sm">
-          <div className="join rounded-field">
-            <button className="btn join-item ">API key</button>
-            <input className="input join-item" onChange={handleApiKeyChange} />
-            <button
-              className="btn btn-success join-item"
-              onClick={handleSaveApiKey}
-            >
-              保存
-            </button>
+      {apiConfigs.map(config => (
+        <div
+          className="collapse collapse-arrow bg-base-100 border border-base-300 mb-2"
+          key={`config-${config.app}`}
+        >
+          <input type="radio" name="my-accordion-2" defaultChecked />
+          <div className="collapse-title font-semibold">{config.app}</div>
+          <div className="collapse-content text-sm">
+            <div className="join rounded-field">
+              <button className="btn join-item ">API key</button>
+              <input
+                className="input join-item w-80"
+                onChange={e => handleApiKeyChange(config.app, e.target.value)}
+                value={config.api_key}
+              />
+              <button
+                className="btn btn-success join-item"
+                onClick={() => handleSaveApiKey(config.app)}
+              >
+                保存
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      ))}
     </section>
   )
 }
