@@ -20,7 +20,7 @@ type HeaderProps = {
 
 type SysConfig = {
   theme: string
-  current_app: string
+  currentApp: string
 }
 
 const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
@@ -28,7 +28,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
   const { setConfig } = useGlobalContext()
   const [sysConfig, setSysConfig] = useState<SysConfig>({
     theme: 'light',
-    current_app: 'gemini'
+    currentApp: 'gemini'
   })
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +58,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
   const handleChangeApp = (app: string) => {
     const config = {
       ...sysConfig,
-      current_app: app
+      currentApp: app
     }
 
     invoke('set_sys_config', { config })
@@ -84,7 +84,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
     }
 
     if (sysConfig) {
-      setConfig({ ...sysConfig, currentApp: sysConfig.current_app })
+      setConfig(sysConfig)
     }
   }, [sysConfig, setConfig])
 

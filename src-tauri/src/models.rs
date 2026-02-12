@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct ApiConfigItem {
     pub app: String,
     pub api_key: String,
@@ -15,6 +16,7 @@ impl Default for ApiConfigItem {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct SysConfig {
     pub theme: String,
     pub current_app: String,
@@ -30,6 +32,7 @@ impl Default for SysConfig {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct _Chat {
     pub app: String,
     pub role: String,

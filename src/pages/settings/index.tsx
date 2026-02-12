@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 
 type ApiConfig = {
   app: string
-  api_key: string
+  apiKey: string
 }
 
 const Settings = () => {
@@ -11,7 +11,7 @@ const Settings = () => {
   const handleApiKeyChange = (app: string, value: string) => {
     setApiConfigs(prev =>
       prev.map(config =>
-        config.app === app ? { ...config, api_key: value } : config
+        config.app === app ? { ...config, apiKey: value } : config
       )
     )
   }
@@ -54,7 +54,7 @@ const Settings = () => {
               <input
                 className="input join-item w-80"
                 onChange={e => handleApiKeyChange(config.app, e.target.value)}
-                value={config.api_key}
+                value={config.apiKey}
               />
               <button
                 className="btn btn-success join-item"
