@@ -1,9 +1,13 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import {
+  materialDark,
+  materialLight
+} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { useGlobalContext } from '@/context/GlobalContext'
 
 type ChatMessage = {
   text: string
@@ -16,6 +20,12 @@ const ChatContainer = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const inputEl = useRef<HTMLInputElement>(null)
   const chatEl = useRef<HTMLDivElement>(null)
+  const { config } = useGlobalContext()
+
+  const theme = useMemo(
+    () => (config.theme === 'light' ? materialLight : materialDark),
+    [config.theme]
+  )
 
   const handleSend = () => {
     const text = inputEl.current?.value || ''
@@ -88,7 +98,7 @@ const ChatContainer = () => {
                         PreTag="div"
                         children={String(children).replace(/\n$/, '')}
                         language={match[1]}
-                        style={materialDark}
+                        style={theme}
                       />
                     ) : (
                       <code {...rest} className={className}>

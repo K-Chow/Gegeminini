@@ -9,6 +9,7 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
+import { useGlobalContext } from '@/context/GlobalContext'
 
 import { invoke } from '@tauri-apps/api/core'
 
@@ -24,6 +25,7 @@ type SysConfig = {
 
 const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
   const navigate = useNavigate()
+  const { setConfig } = useGlobalContext()
   const [sysConfig, setSysConfig] = useState<SysConfig>({
     theme: 'light',
     current_app: 'gemini'
@@ -80,7 +82,11 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
     if (sysConfig.theme) {
       document.documentElement.setAttribute('data-theme', sysConfig.theme)
     }
-  }, [sysConfig.theme])
+
+    if (sysConfig) {
+      setConfig({ ...sysConfig, currentApp: sysConfig.current_app })
+    }
+  }, [sysConfig, setConfig])
 
   return (
     <header

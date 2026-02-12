@@ -10,15 +10,15 @@ interface GlobalProviderProps {
 }
 
 const GlobalContext = createContext({
-  sysConfig: {},
-  setSysConfig: (config: SysConfig) => {}
+  config: {},
+  setConfig: (config: SysConfig) => {}
 })
 
 export const GlobalProvider = ({ children }: GlobalProviderProps) => {
-  const [sysConfig, setSysConfig] = useState<SysConfig>({})
+  const [config, setConfig] = useState<SysConfig>({})
 
   return (
-    <GlobalContext.Provider value={{ sysConfig, setSysConfig }}>
+    <GlobalContext.Provider value={{ config, setConfig }}>
       {children}
     </GlobalContext.Provider>
   )
