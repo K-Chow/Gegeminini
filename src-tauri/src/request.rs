@@ -10,7 +10,7 @@ pub async fn api_request(
 ) -> Result<serde_json::Value, String> {
     let current_app: String = state
         .db
-        .get("config:sys")
+        .get("config:system")
         .map_err(|e| e.to_string())?
         .and_then(|bytes| bincode::deserialize(&bytes).ok())
         .map(|config: SysConfig| config.current_app)
@@ -18,7 +18,7 @@ pub async fn api_request(
 
     let api_key = state
         .db
-        .get(format!("config:api:{}", current_app))
+        .get(format!("config:app:{}", current_app))
         .map_err(|e| e.to_string())?
         .and_then(|bytes| bincode::deserialize(&bytes).ok())
         .map(|item: ApiConfigItem| item.api_key)
