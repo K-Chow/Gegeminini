@@ -22,7 +22,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            request::api_request,
+            request::send_message,
             config::get_api_config,
             config::save_api_config,
             config::set_sys_config,

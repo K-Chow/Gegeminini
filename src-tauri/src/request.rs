@@ -3,12 +3,12 @@ use crate::models::{ApiConfigItem, SysConfig};
 use crate::AppState;
 use reqwest::Client;
 
-#[tauri::command]
-pub async fn api_request(
-    state: tauri::State<'_, AppState>,
-    contents: serde_json::Value,
+async fn api_request(
+    app_state: &AppState,
+    url: String,
+    payload: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
-    let current_app: String = state
+    let current_app: String = app_state
         .db
         .get("config:system")
         .map_err(|e| e.to_string())?
@@ -16,7 +16,7 @@ pub async fn api_request(
         .map(|config: SysConfig| config.current_app)
         .ok_or_else(|| format!("sys config is not found"))?;
 
-    let api_key = state
+    let api_key = app_state
         .db
         .get(format!("config:app:{}", current_app))
         .map_err(|e| e.to_string())?
@@ -25,15 +25,6 @@ pub async fn api_request(
         .ok_or_else(|| format!("{} api key is not found", current_app))?;
 
     let client = Client::new();
-
-    let url = format!(
-        "{}/models/{}:generateContent",
-        GEMINI_BASE_URL, GEMINI_VERSION
-    );
-
-    let payload = serde_json::json!({
-      "contents": contents
-    });
 
     let response = client
         .post(url)
@@ -44,6 +35,25 @@ pub async fn api_request(
         .map_err(|e| e.to_string())?;
 
     let result = response.json().await.map_err(|e| e.to_string())?;
+
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn send_message(
+    state: tauri::State<'_, AppState>,
+    contents: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let url = format!(
+        "{}/models/{}:generateContent",
+        GEMINI_BASE_URL, GEMINI_VERSION
+    );
+
+    let payload = serde_json::json!({
+      "contents": contents
+    });
+
+    let result = api_request(&state, url, payload).await?;
 
     Ok(result)
 }
