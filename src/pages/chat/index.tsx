@@ -38,7 +38,7 @@ const ChatContainer = () => {
     setLoading(true)
     setMessages(prev => [...prev, { text, role: 'USER', time: Date.now() }])
 
-    invoke('api_request', {
+    invoke('send_message', {
       contents: [
         {
           parts: [
