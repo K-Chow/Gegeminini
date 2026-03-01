@@ -10,13 +10,27 @@ interface GlobalProviderProps {
   children: React.ReactNode
 }
 
+type ChatItem = {
+  id: string
+  title: string
+  path: string
+}
+
 const GlobalContext = createContext({
   config: {
     theme: '',
     currentApp: '',
     model: ''
   },
-  setConfig: (config: SysConfig) => {}
+  chats: [
+    {
+      id: '',
+      title: '',
+      path: ''
+    }
+  ],
+  setConfig: (config: SysConfig) => {},
+  setChats: (chats: ChatItem[]) => {}
 })
 
 export const GlobalProvider = ({ children }: GlobalProviderProps) => {
@@ -26,8 +40,16 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
     model: ''
   })
 
+  const [chats, setChats] = useState<ChatItem[]>([
+    {
+      id: '0',
+      title: 'New',
+      path: '/chat'
+    }
+  ])
+
   return (
-    <GlobalContext.Provider value={{ config, setConfig }}>
+    <GlobalContext.Provider value={{ config, setConfig, chats, setChats }}>
       {children}
     </GlobalContext.Provider>
   )

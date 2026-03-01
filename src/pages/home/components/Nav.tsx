@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useGlobalContext } from '@/context/GlobalContext'
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 type NavProps = {
@@ -6,23 +7,10 @@ type NavProps = {
   onClose: () => void
 }
 
-type ChatItem = {
-  id: string
-  title: string
-  path: string
-}
-
 const Nav = ({ onClose }: NavProps) => {
+  const { chats, setChats } = useGlobalContext()
   const { pathname } = useLocation()
-  const [chats, setChats] = useState<ChatItem[]>([
-    {
-      id: '0',
-      title: 'New',
-      path: '/chat'
-    }
-  ])
-  const [currentChat, setCurrentChat] = useState<ChatItem>(chats[0])
-
+  const [currentChat, setCurrentChat] = useState(chats[0])
   return (
     <div className="drawer-side is-drawer-close:overflow-visible shadow-2xl border-r-1 border-base-300">
       <label className="drawer-overlay" onClick={() => onClose()} />
