@@ -3,11 +3,7 @@ use crate::models::{ApiConfigItem, SysConfig};
 use crate::AppState;
 use reqwest::Client;
 
-async fn api_request(
-    app_state: &AppState,
-    url: String,
-    payload: serde_json::Value,
-) -> Result<serde_json::Value, String> {
+fn get_api_key(app_state: &AppState) -> Result<String, String> {
     let current_app: String = app_state
         .db
         .get("config:system")
@@ -23,9 +19,17 @@ async fn api_request(
         .and_then(|bytes| bincode::deserialize(&bytes).ok())
         .map(|item: ApiConfigItem| item.api_key)
         .ok_or_else(|| format!("{} api key is not found", current_app))?;
+    Ok(api_key)
+}
+
+async fn api_request(
+    app_state: &AppState,
+    url: String,
+    payload: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let api_key = get_api_key(app_state)?;
 
     let client = Client::new();
-
     let response = client
         .post(url)
         .header("x-goog-api-key", api_key)
@@ -33,6 +37,15 @@ async fn api_request(
         .send()
         .await
         .map_err(|e| e.to_string())?;
+
+    let result = response.json().await.map_err(|e| e.to_string())?;
+
+    Ok(result)
+}
+
+async fn fetcher(url: String) -> Result<serde_json::Value, String> {
+    let client = Client::new();
+    let response = client.get(url).send().await.map_err(|e| e.to_string())?;
 
     let result = response.json().await.map_err(|e| e.to_string())?;
 
@@ -62,13 +75,9 @@ pub async fn send_message(
 pub async fn get_model_list(
     state: tauri::State<'_, AppState>,
 ) -> Result<serde_json::Value, String> {
-    let client = Client::new();
+    let url = format!("{}/models?key={}", GEMINI_BASE_URL, get_api_key(&state)?);
 
-    let url = format!("{}/", GEMINI_BASE_URL);
-
-    let payload = serde_json::json!({});
-
-    let result = api_request(&state, url, payload).await?;
+    let result = fetcher(url).await?;
 
     Ok(result)
 }
