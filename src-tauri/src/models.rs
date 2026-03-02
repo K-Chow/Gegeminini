@@ -5,12 +5,14 @@ use serde::{Deserialize, Serialize};
 pub struct ApiConfigItem {
     pub app: String,
     pub api_key: String,
+    pub model: String,
 }
 impl Default for ApiConfigItem {
     fn default() -> Self {
         Self {
             app: "gemini".to_string(),
             api_key: "".to_string(),
+            model: "gemini-2.5-flash-lite".to_string(),
         }
     }
 }
