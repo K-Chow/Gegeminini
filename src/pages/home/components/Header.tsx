@@ -21,6 +21,7 @@ type HeaderProps = {
 type SysConfig = {
   theme: string
   currentApp: string
+  model: string
 }
 
 const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
@@ -28,7 +29,8 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
   const { setConfig } = useGlobalContext()
   const [sysConfig, setSysConfig] = useState<SysConfig>({
     theme: 'light',
-    currentApp: 'gemini'
+    currentApp: 'gemini',
+    model: ''
   })
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +50,12 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
         console.log(res)
         setSysConfig(res as SysConfig)
       })
+      .catch(err => console.log(err))
+  }
+
+  const getModels = () => {
+    invoke('get_model_list')
+      .then(res => console.log(res))
       .catch(err => console.log(err))
   }
 
@@ -76,6 +84,7 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
 
   useEffect(() => {
     getSysConfig()
+    getModels()
   }, [])
 
   useEffect(() => {

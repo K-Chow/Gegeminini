@@ -3,6 +3,7 @@ import { createContext, useContext, useState } from 'react'
 export type SysConfig = {
   theme: string
   currentApp: string
+  model: string
 }
 
 interface GlobalProviderProps {
@@ -12,7 +13,8 @@ interface GlobalProviderProps {
 const GlobalContext = createContext({
   config: {
     theme: '',
-    currentApp: ''
+    currentApp: '',
+    model: ''
   },
   setConfig: (config: SysConfig) => {}
 })
@@ -20,7 +22,8 @@ const GlobalContext = createContext({
 export const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const [config, setConfig] = useState<SysConfig>({
     theme: '',
-    currentApp: ''
+    currentApp: '',
+    model: ''
   })
 
   return (
