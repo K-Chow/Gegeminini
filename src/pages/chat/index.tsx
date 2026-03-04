@@ -55,7 +55,7 @@ const ChatContainer = () => {
           ...prev,
           ...candidates.map((item: any) => ({
             text: item.content.parts.map(({ text }: any) => text).join('\n'),
-            role: 'ASSISTANT',
+            role: 'MODEL',
             time: Date.now()
           }))
         ])
