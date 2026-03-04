@@ -12,7 +12,7 @@ impl Default for ApiConfigItem {
         Self {
             app: "gemini".to_string(),
             api_key: "".to_string(),
-            model: "gemini-2.5-flash-lite".to_string(),
+            model: "models/gemini-2.5-flash-lite".to_string(),
         }
     }
 }

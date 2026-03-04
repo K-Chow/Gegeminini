@@ -75,7 +75,7 @@ pub async fn send_message(
     contents: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
     let model = get_model(&state)?;
-    let url = format!("{}/models/{}:generateContent", GEMINI_BASE_URL, model);
+    let url = format!("{}/{}:generateContent", GEMINI_BASE_URL, model);
 
     let payload = serde_json::json!({
       "contents": contents

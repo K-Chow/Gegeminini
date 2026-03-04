@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core'
 type ApiConfig = {
   app: string
   apiKey: string
+  model: string
 }
 
 type ModelItem = {
@@ -40,7 +41,7 @@ const Settings = () => {
       .catch(err => console.log(err))
   }
 
-  const handleModleChange = (
+  const handleModelChange = (
     e: ChangeEvent<HTMLSelectElement>,
     app: string
   ) => {
@@ -54,6 +55,7 @@ const Settings = () => {
     invoke('get_model_list')
       .then(res => {
         const { models = [] } = res as { models: ModelItem[] }
+        console.log(models)
         setModels(models)
       })
       .catch(err => console.log(err))
@@ -86,9 +88,9 @@ const Settings = () => {
             <div className="join rounded-field mb-2 w-full">
               <button className="btn join-item">Model</button>
               <select
-                defaultValue=""
+                value={config.model}
                 className="select join-item w-80"
-                onChange={e => handleModleChange(e, config.app)}
+                onChange={e => handleModelChange(e, config.app)}
               >
                 {models.map(model => (
                   <option key={model.name} value={model.name}>

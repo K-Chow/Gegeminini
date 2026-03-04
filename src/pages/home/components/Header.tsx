@@ -53,12 +53,6 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
       .catch(err => console.log(err))
   }
 
-  const getModels = () => {
-    invoke('get_model_list')
-      .then(res => console.log(res))
-      .catch(err => console.log(err))
-  }
-
   const handleNavToSettings = () => {
     navigate('/settings')
   }
@@ -84,7 +78,6 @@ const Header = ({ isOpen, onToggleDrawer }: HeaderProps) => {
 
   useEffect(() => {
     getSysConfig()
-    getModels()
   }, [])
 
   useEffect(() => {
