@@ -11,7 +11,7 @@ import { useGlobalContext } from '@/context/GlobalContext'
 
 type ChatMessage = {
   text: string
-  role: 'USER' | 'ASSISTANT'
+  role: 'USER' | 'MODEL'
   time: number
 }
 
@@ -26,6 +26,14 @@ const ChatContainer = () => {
     () => (config.theme === 'light' ? materialLight : materialDark),
     [config.theme]
   )
+
+  const handleSaveMessage = (message: ChatMessage) => {
+    invoke('save_message', {
+      message
+    })
+      .then(() => console.log('message saved'))
+      .catch(err => console.log(err))
+  }
 
   const handleSend = () => {
     const text = inputEl.current?.value || ''

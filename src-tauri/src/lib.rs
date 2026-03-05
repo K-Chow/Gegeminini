@@ -1,3 +1,4 @@
+mod chat;
 mod config;
 mod constants;
 mod models;
@@ -27,7 +28,8 @@ pub fn run() {
             config::get_api_config,
             config::save_api_config,
             config::set_sys_config,
-            config::get_sys_config
+            config::get_sys_config,
+            chat::save_message,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
