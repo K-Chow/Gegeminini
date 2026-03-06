@@ -30,6 +30,7 @@ pub fn run() {
             config::set_sys_config,
             config::get_sys_config,
             chat::save_message,
+            chat::get_messages
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -3,7 +3,7 @@ use crate::models::{ApiConfigItem, SysConfig};
 use crate::AppState;
 use reqwest::Client;
 
-fn get_current_app(app_state: &AppState) -> Result<String, String> {
+pub fn get_current_app(app_state: &AppState) -> Result<String, String> {
     let current_app: String = app_state
         .db
         .get("config:system")
@@ -14,7 +14,7 @@ fn get_current_app(app_state: &AppState) -> Result<String, String> {
     Ok(current_app)
 }
 
-fn get_model(app_state: &AppState) -> Result<String, String> {
+pub fn get_model(app_state: &AppState) -> Result<String, String> {
     let current_app: String = get_current_app(app_state)?;
     let model = app_state
         .db
