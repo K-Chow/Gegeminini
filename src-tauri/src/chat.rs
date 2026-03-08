@@ -1,20 +1,20 @@
 use crate::AppState;
 use crate::{models::ChatMessage, request::get_current_app};
 use serde_json::json;
-use sled::Batch;
-use std::sync::Arc;
 use tauri::{App, Manager};
-
+use uuid::{Timestamp, Uuid};
 #[tauri::command]
 pub async fn save_message(
     state: tauri::State<'_, AppState>,
     messages: ChatMessage,
 ) -> Result<(), String> {
-    let mut batch = Batch::default();
+    let time = Timestamp::now(uuid::NoContext);
+    let uuid = Uuid::new_v7(time);
+
     state
         .db
         .insert(
-            format!("message:{}:{}", messages.app, messages.id),
+            format!("message:{}:{}", messages.app, uuid),
             bincode::serialize(&messages).map_err(|e| e.to_string())?,
         )
         .map_err(|e| e.to_string())?;
