@@ -36,7 +36,6 @@ impl Default for SysConfig {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatMessage {
-    pub id: String,
     pub app: String,
     pub role: String,
     pub content: String,

@@ -3,11 +3,8 @@ use crate::{models::ChatMessage, request::get_current_app};
 use serde_json::json;
 use tauri::{App, Manager};
 use uuid::{Timestamp, Uuid};
-#[tauri::command]
-pub async fn save_message(
-    state: tauri::State<'_, AppState>,
-    messages: ChatMessage,
-) -> Result<(), String> {
+
+pub fn save_message(state: &AppState, messages: ChatMessage) -> Result<(), String> {
     let time = Timestamp::now(uuid::NoContext);
     let uuid = Uuid::new_v7(time);
 

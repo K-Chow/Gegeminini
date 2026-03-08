@@ -62,9 +62,7 @@ const ChatContainer = () => {
         setMessages(prev => [
           ...prev,
           ...candidates.map((item: any) => ({
-            text: item.content.parts.map(({ text }: any) => text).join('\n'),
-            role: 'MODEL',
-            time: Date.now()
+            text: item.content.parts.map(({ text }: any) => text).join('\n')
           }))
         ])
       })

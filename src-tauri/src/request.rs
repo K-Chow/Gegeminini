@@ -1,7 +1,9 @@
+use crate::chat::save_message;
 use crate::constants::GEMINI_BASE_URL;
-use crate::models::{ApiConfigItem, SysConfig};
+use crate::models::{ApiConfigItem, ChatMessage, SysConfig};
 use crate::AppState;
 use reqwest::Client;
+use serde_json::{json, Value};
 
 pub fn get_current_app(app_state: &AppState) -> Result<String, String> {
     let current_app: String = app_state
@@ -60,7 +62,7 @@ async fn api_request(
     Ok(result)
 }
 
-async fn fetcher(url: String) -> Result<serde_json::Value, String> {
+async fn fetcher(url: String) -> Result<Value, String> {
     let client = Client::new();
     let response = client.get(url).send().await.map_err(|e| e.to_string())?;
 
@@ -72,16 +74,39 @@ async fn fetcher(url: String) -> Result<serde_json::Value, String> {
 #[tauri::command]
 pub async fn send_message(
     state: tauri::State<'_, AppState>,
-    contents: serde_json::Value,
-) -> Result<serde_json::Value, String> {
+    contents: Value,
+) -> Result<Value, String> {
     let model = get_model(&state)?;
     let url = format!("{}/{}:generateContent", GEMINI_BASE_URL, model);
+    let app = get_current_app(&state)?;
 
-    let payload = serde_json::json!({
-      "contents": contents
+    let payload = json!({
+      "contents": &contents
     });
 
-    let result = api_request(&state, url, payload).await?;
+    let result = api_request(&state, url, payload.clone()).await?;
+
+    save_message(
+        &state,
+        ChatMessage {
+            app: app.clone(),
+            role: "USER".to_string(),
+            content: payload.to_string(),
+            content_type: "application/json".to_string(),
+            timestamp: chrono::Utc::now().to_rfc3339(),
+        },
+    );
+
+    save_message(
+        &state,
+        ChatMessage {
+            app: app,
+            role: "MODEL".to_string(),
+            content: result.to_string(),
+            content_type: "application/json".to_string(),
+            timestamp: chrono::Utc::now().to_rfc3339(),
+        },
+    );
 
     Ok(result)
 }
