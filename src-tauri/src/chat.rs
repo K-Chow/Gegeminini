@@ -4,17 +4,17 @@ use serde_json::json;
 use tauri::{App, Manager};
 use uuid::{Timestamp, Uuid};
 
-pub fn save_message(state: &AppState, messages: ChatMessage) -> Result<(), String> {
-    let time = Timestamp::now(uuid::NoContext);
-    let uuid = Uuid::new_v7(time);
-
-    state
-        .db
-        .insert(
-            format!("message:{}:{}", messages.app, uuid),
-            bincode::serialize(&messages).map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())?;
+pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result<(), String> {
+    for msg in &messages {
+        let uuid = Uuid::new_v7(Timestamp::now(uuid::NoContext));
+        state
+            .db
+            .insert(
+                format!("message:{}:{}", msg.app, uuid),
+                bincode::serialize(&msg).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?;
+    }
     state.db.flush().map_err(|e| e.to_string())?;
     Ok(())
 }

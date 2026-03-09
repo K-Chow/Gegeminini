@@ -4,6 +4,7 @@ use crate::models::{ApiConfigItem, ChatMessage, SysConfig};
 use crate::AppState;
 use reqwest::Client;
 use serde_json::{json, Value};
+use tauri::async_runtime::spawn;
 
 pub fn get_current_app(app_state: &AppState) -> Result<String, String> {
     let current_app: String = app_state
@@ -84,29 +85,37 @@ pub async fn send_message(
       "contents": &contents
     });
 
-    let result = api_request(&state, url, payload.clone()).await?;
+    let result = api_request(&state, url, payload.clone())
+        .await
+        .map_err(|e| e.to_string())?;
 
-    save_message(
-        &state,
-        ChatMessage {
-            app: app.clone(),
-            role: "USER".to_string(),
-            content: payload.to_string(),
-            content_type: "application/json".to_string(),
-            timestamp: chrono::Utc::now().to_rfc3339(),
-        },
-    );
+    let state_handle = state.inner().clone();
+    let save_payload = payload.to_string();
+    let save_result = result.clone().to_string();
 
-    save_message(
-        &state,
-        ChatMessage {
-            app: app,
-            role: "MODEL".to_string(),
-            content: result.to_string(),
-            content_type: "application/json".to_string(),
-            timestamp: chrono::Utc::now().to_rfc3339(),
-        },
-    );
+    spawn(async move {
+        save_message(
+            state_handle,
+            vec![
+                ChatMessage {
+                    app: app.clone(),
+                    role: "USER".to_string(),
+                    content: save_payload,
+                    content_type: "application/json".to_string(),
+                    timestamp: chrono::Utc::now().to_rfc3339(),
+                },
+                ChatMessage {
+                    app: app,
+                    role: "MODEL".to_string(),
+                    content: save_result,
+                    content_type: "application/json".to_string(),
+                    timestamp: chrono::Utc::now().to_rfc3339(),
+                },
+            ],
+        )
+        .await
+        .map_err(|e| e.to_string());
+    });
 
     Ok(result)
 }

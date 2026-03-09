@@ -8,6 +8,7 @@ use tauri::Manager;
 use crate::config::{init_data, init_db};
 use std::sync::Arc;
 
+#[derive(Clone)] //Enable to clone app state
 pub struct AppState {
     pub db: Arc<sled::Db>,
 }
@@ -29,7 +30,6 @@ pub fn run() {
             config::save_api_config,
             config::set_sys_config,
             config::get_sys_config,
-            chat::save_message,
             chat::get_messages
         ])
         .run(tauri::generate_context!())
