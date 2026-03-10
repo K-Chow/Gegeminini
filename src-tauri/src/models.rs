@@ -40,7 +40,7 @@ pub struct ChatMessage {
     pub role: String,
     pub content: String,
     pub content_type: String,
-    pub timestamp: String,
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
