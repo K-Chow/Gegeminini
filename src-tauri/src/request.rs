@@ -94,7 +94,7 @@ pub async fn send_message(
     let save_result = result.clone().to_string();
 
     spawn(async move {
-        save_message(
+        let _ = save_message(
             state_handle,
             vec![
                 ChatMessage {

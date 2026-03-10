@@ -27,12 +27,10 @@ const ChatContainer = () => {
     [config.theme]
   )
 
-  const handleSaveMessage = (message: ChatMessage) => {
-    invoke('save_message', {
-      message
-    })
-      .then(() => console.log('message saved'))
-      .catch(err => console.log(err))
+  const getMessages = () => {
+    invoke('get_messages')
+      .then(result => console.log(result))
+      .catch(e => console.log(e))
   }
 
   const handleSend = () => {
@@ -69,6 +67,10 @@ const ChatContainer = () => {
       .catch(e => console.log(e))
       .finally(() => setLoading(false))
   }
+
+  useEffect(() => {
+    getMessages()
+  }, [])
 
   useEffect(() => {
     if (messages.length && chatEl.current) {
