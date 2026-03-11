@@ -63,3 +63,19 @@ pub struct _Content {
 pub struct _GeminiRequest {
     pub contents: Vec<_Content>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Page {
+    pub size: usize,
+    pub number: usize,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        Self {
+            size: 20,
+            number: 1,
+        }
+    }
+}
