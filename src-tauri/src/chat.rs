@@ -4,20 +4,18 @@ use crate::{
     request::get_current_app,
 };
 use serde_json::json;
-use tauri::{App, Manager};
 use uuid::{Timestamp, Uuid};
 
 pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result<(), String> {
+    let app = get_current_app(&state)?;
+    let mut batch = sled::Batch::default();
     for msg in &messages {
         let uuid = Uuid::new_v7(Timestamp::now(uuid::NoContext));
-        state
-            .db
-            .insert(
-                format!("message:{}:{}", msg.app, uuid),
-                bincode::serialize(&msg).map_err(|e| e.to_string())?,
-            )
-            .map_err(|e| e.to_string())?;
+        let key = format!("message:{}:{}", app, uuid);
+        let value = bincode::serialize(&msg).map_err(|e| e.to_string())?;
+        batch.insert(key.as_bytes(), value);
     }
+    state.db.apply_batch(batch).map_err(|e| e.to_string())?;
     state.db.flush().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -31,7 +29,7 @@ pub async fn get_messages(
     let prefix = format!("message:{}:", app);
 
     let page = page.unwrap_or_default();
-    let skip = (page.number - 1) * page.size;
+    let skip = (page.number.max(1) - 1) * page.size;
     let count: usize = page.size;
 
     let mut messages = Vec::new();
@@ -42,5 +40,5 @@ pub async fn get_messages(
         messages.push(message);
     }
 
-    Ok(json!(messages))
+    Ok(json!(messages.reverse()))
 }
