@@ -2,8 +2,8 @@ use crate::models::{ApiConfigItem, CommandResult, SysConfig};
 use crate::AppState;
 use serde_json::json;
 use sled::Batch;
-use std::sync::Arc;
-use tauri::{App, Manager};
+use std::{fs, sync::Arc};
+use tauri::{App, AppHandle, Manager};
 
 pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
     enum InitList {
@@ -125,4 +125,14 @@ pub async fn get_sys_config(state: tauri::State<'_, AppState>) -> Result<SysConf
             bincode::deserialize(&bytes).map_err(|e: Box<bincode::ErrorKind>| e.to_string())
         }) // 尝试反序列化
         .unwrap_or_else(|| Ok(SysConfig::default())) // 如果是 None 则返回默认值
+}
+
+#[tauri::command]
+pub fn delete_data(app_handle: AppHandle) -> Result<CommandResult, String> {
+    let app_data_dir = app_handle.path().app_data_dir().expect("无法获取路径");
+    fs::remove_dir_all(app_data_dir.join("gegeminini_sled")).map_err(|e| e.to_string())?;
+    Ok(CommandResult {
+        status: 200,
+        message: format!("OK"),
+    })
 }

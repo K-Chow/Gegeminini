@@ -30,6 +30,7 @@ pub fn run() {
             config::save_api_config,
             config::set_sys_config,
             config::get_sys_config,
+            config::delete_data,
             chat::get_messages
         ])
         .run(tauri::generate_context!())
