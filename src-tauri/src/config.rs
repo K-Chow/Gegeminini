@@ -128,9 +128,10 @@ pub async fn get_sys_config(state: tauri::State<'_, AppState>) -> Result<SysConf
 }
 
 #[tauri::command]
-pub fn delete_data(app_handle: AppHandle) -> Result<CommandResult, String> {
-    let app_data_dir = app_handle.path().app_data_dir().expect("无法获取路径");
-    fs::remove_dir_all(app_data_dir.join("gegeminini_sled")).map_err(|e| e.to_string())?;
+pub fn delete_data(state: tauri::State<'_, AppState>) -> Result<CommandResult, String> {
+    state.db.clear().map_err(|e| e.to_string())?;
+
+    let _ = init_data(state);
     Ok(CommandResult {
         status: 200,
         message: format!("OK"),

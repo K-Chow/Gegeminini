@@ -61,6 +61,12 @@ const Settings = () => {
       .catch(err => console.log(err))
   }
 
+  const handleClearData = () => {
+    invoke('delete_data')
+      .then(res => console.log(res))
+      .catch(err => console.log(err))
+  }
+
   useEffect(() => {
     getSysConfig()
     getModels()
@@ -74,11 +80,11 @@ const Settings = () => {
           className="collapse collapse-arrow bg-base-100 border border-base-300 mb-2"
           key={`config-${config.app}`}
         >
-          <input type="radio" name="my-accordion-2" defaultChecked />
+          <input type="radio" name={`accordion-${config.app}`} defaultChecked />
           <div className="collapse-title font-semibold">{config.app}</div>
           <div className="collapse-content text-sm">
             <div className="join rounded-field mb-2 w-full">
-              <button className="btn join-item ">API key</button>
+              <button className="btn join-item w-28">API key</button>
               <input
                 className="input join-item w-80"
                 onChange={e => handleApiKeyChange(config.app, e.target.value)}
@@ -86,11 +92,12 @@ const Settings = () => {
               />
             </div>
             <div className="join rounded-field mb-2 w-full">
-              <button className="btn join-item">Model</button>
+              <button className="btn join-item w-28">Model</button>
               <select
                 value={config.model}
                 className="select join-item w-80"
                 onChange={e => handleModelChange(e, config.app)}
+                disabled={models.length === 0 || !config.apiKey}
               >
                 {models.map(model => (
                   <option key={model.name} value={model.name}>
@@ -100,15 +107,27 @@ const Settings = () => {
               </select>
             </div>
 
-            <button
-              className="btn btn-success"
-              onClick={() => handleSaveApiKey(config.app)}
-            >
-              保存
-            </button>
+            <div className="flex justify-end">
+              <button
+                className="btn btn-success mt-4 w-28"
+                onClick={() => handleSaveApiKey(config.app)}
+              >
+                保存
+              </button>
+            </div>
           </div>
         </div>
       ))}
+      <div className="p-4 rounded-box border border-base-300 ">
+        <div className="flex justify-end">
+          <button
+            className="btn btn-error w-28"
+            onClick={() => handleClearData()}
+          >
+            清除数据
+          </button>
+        </div>
+      </div>
     </section>
   )
 }
