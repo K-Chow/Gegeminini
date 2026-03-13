@@ -79,3 +79,23 @@ impl Default for Page {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct List<T> {
+    pub items: Vec<T>,
+    pub total: usize,
+    pub page: usize,
+    pub size: usize,
+}
+
+impl Default for List<serde_json::Value> {
+    fn default() -> Self {
+        Self {
+            items: vec![],
+            total: 0,
+            page: 1,
+            size: 20,
+        }
+    }
+}

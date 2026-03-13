@@ -1,6 +1,6 @@
 use crate::AppState;
 use crate::{
-    models::{ChatMessage, Page},
+    models::{ChatMessage, List, Page},
     request::get_current_app,
 };
 use serde_json::json;
@@ -34,11 +34,24 @@ pub async fn get_messages(
 
     let mut messages = Vec::new();
 
+    let total = state.db.scan_prefix(prefix.as_bytes()).count();
+
     for item in state.db.scan_prefix(prefix).rev().skip(skip).take(count) {
         let (_key, value) = item.map_err(|e| e.to_string())?;
         let message: ChatMessage = bincode::deserialize(&value).map_err(|e| e.to_string())?;
         messages.push(message);
     }
-
-    Ok(json!(messages.reverse()))
+    println!(
+        "get messages: skip {}, count {}, actual {}",
+        skip,
+        count,
+        messages.len()
+    );
+    messages.reverse();
+    Ok(json!(List {
+        items: messages,
+        total: total,
+        page: page.number,
+        size: page.size
+    }))
 }
