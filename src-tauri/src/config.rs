@@ -2,14 +2,15 @@ use crate::models::{ApiConfigItem, CommandResult, SysConfig};
 use crate::AppState;
 use serde_json::json;
 use sled::Batch;
-use std::{fs, sync::Arc};
-use tauri::{App, AppHandle, Manager};
+use std::sync::Arc;
+use tauri::{App, Manager};
 
 pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
     enum InitList {
         SystemConfig(SysConfig),
         ApiConfig(ApiConfigItem),
     }
+    let mut batch = sled::Batch::default();
     let data = vec![
         (
             "config:system",
@@ -28,10 +29,11 @@ pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
                 InitList::ApiConfig(api) => bincode::serialize(&api),
             }
             .map_err(|e| e.to_string())?;
-
-            state.db.insert(key, bytes).map_err(|e| e.to_string())?;
+            batch.insert(key, bytes);
         }
     }
+
+    state.db.apply_batch(batch).map_err(|e| e.to_string())?;
     state.db.flush().map_err(|e| e.to_string())?;
     Ok(())
 }
