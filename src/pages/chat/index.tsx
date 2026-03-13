@@ -8,9 +8,10 @@ import {
   materialLight
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useGlobalContext } from '@/context/GlobalContext'
+import type { List } from '@/types'
 
 type ChatMessage = {
-  text: string
+  content: string
   role: 'USER' | 'MODEL'
   time: number
 }
@@ -29,7 +30,9 @@ const ChatContainer = () => {
 
   const getMessages = () => {
     invoke('get_messages')
-      .then(result => console.log(result))
+      .then(result => {
+        setMessages((result as List<ChatMessage>).items)
+      })
       .catch(e => console.log(e))
   }
 
@@ -42,7 +45,10 @@ const ChatContainer = () => {
     inputEl.current!.value = ''
 
     setLoading(true)
-    setMessages(prev => [...prev, { text, role: 'USER', time: Date.now() }])
+    setMessages(prev => [
+      ...prev,
+      { content: text, role: 'USER', time: Date.now() }
+    ])
 
     invoke('send_message', {
       contents: [
@@ -60,7 +66,9 @@ const ChatContainer = () => {
         setMessages(prev => [
           ...prev,
           ...candidates.map((item: any) => ({
-            text: item.content.parts.map(({ text }: any) => text).join('\n')
+            content: item.content.parts.map(({ text }: any) => text).join('\n'),
+            time: Date.now(),
+            role: 'MODEL'
           }))
         ])
       })
@@ -82,19 +90,19 @@ const ChatContainer = () => {
   }, [messages, chatEl])
 
   return (
-    <section className="max-h-full flex flex-col h-screen">
+    <section className="max-h-full flex flex-col h-screen max-w-full">
       <div
-        className="grow overflow-y-auto p-4 space-y-4 bg-base-200"
+        className="grow overflow-y-auto p-4 space-y-4 bg-base-200 max-w-full"
         ref={chatEl}
       >
         {messages.map((message, index) => (
           <div
-            className={`chat ${message.role === 'USER' ? 'chat-end' : 'chat-start'}`}
+            className={`chat max-w-full whitespace-pre-wrap overflow-hidden ${message.role === 'USER' ? 'chat-end ' : 'chat-start'}`}
             key={`message-${index}`}
           >
-            <div className="chat-bubble">
+            <div className="chat-bubble max-w-[90%]">
               <Markdown
-                children={message.text}
+                children={message.content}
                 remarkPlugins={[remarkGfm]}
                 components={{
                   code(props) {
@@ -109,7 +117,11 @@ const ChatContainer = () => {
                         style={theme}
                       />
                     ) : (
-                      <code {...rest} className={className}>
+                      <code
+                        {...rest}
+                        style={{ maxWidth: '100%' }}
+                        className={className}
+                      >
                         {children}
                       </code>
                     )
