@@ -34,8 +34,8 @@ impl Default for SysConfig {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct ChatMessage {
+    pub id: String,
     pub app: String,
     pub role: String,
     pub content: String,

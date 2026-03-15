@@ -9,9 +9,18 @@ use uuid::{Timestamp, Uuid};
 pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result<(), String> {
     let app = get_current_app(&state)?;
     let mut batch = sled::Batch::default();
-    for msg in &messages {
-        let uuid = Uuid::new_v7(Timestamp::now(uuid::NoContext));
+    let base_time = chrono::Utc::now().timestamp_nanos_opt().unwrap();
+    for (index, msg) in messages.into_iter().enumerate() {
+        let base_nanos = base_time + index as i64;
+        let secs = (base_nanos / 1_000_000_000) as u64;
+        let nanos = (base_nanos % 1_000_000_000) as u32;
+        let uuid = Uuid::new_v7(Timestamp::from_unix(uuid::NoContext, secs, nanos));
         let key = format!("message:{}:{}", app, uuid);
+        let msg = ChatMessage {
+            id: uuid.to_string(),
+            timestamp: base_nanos,
+            ..msg
+        };
         let value = bincode::serialize(&msg).map_err(|e| e.to_string())?;
         batch.insert(key.as_bytes(), value);
     }
@@ -47,7 +56,7 @@ pub async fn get_messages(
         count,
         messages.len()
     );
-    messages.reverse();
+    messages.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
     Ok(json!(List {
         items: messages,
         total: total,

@@ -31,6 +31,7 @@ const ChatContainer = () => {
   const getMessages = () => {
     invoke('get_messages')
       .then(result => {
+        console.log(result)
         setMessages((result as List<ChatMessage>).items)
       })
       .catch(e => console.log(e))

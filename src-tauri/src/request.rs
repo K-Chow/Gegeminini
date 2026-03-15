@@ -94,23 +94,24 @@ pub async fn send_message(
     let save_result = result.clone().to_string();
 
     spawn(async move {
-        let timestamp = chrono::Utc::now().timestamp_millis();
         let _ = save_message(
             state_handle,
             vec![
                 ChatMessage {
+                    id: "".to_string(),
                     app: app.clone(),
                     role: "USER".to_string(),
                     content: save_payload,
                     content_type: "application/json".to_string(),
-                    timestamp,
+                    timestamp: 0,
                 },
                 ChatMessage {
+                    id: "".to_string(),
                     app: app,
                     role: "MODEL".to_string(),
                     content: save_result,
                     content_type: "application/json".to_string(),
-                    timestamp,
+                    timestamp: 0,
                 },
             ],
         )
