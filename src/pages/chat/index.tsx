@@ -32,7 +32,31 @@ const ChatContainer = () => {
     invoke('get_messages')
       .then(result => {
         console.log(result)
-        setMessages((result as List<ChatMessage>).items)
+        setMessages(
+          (result as List<ChatMessage>).items.map(message => {
+            const content = JSON.parse(message.content)
+            return message.role === 'USER'
+              ? {
+                  ...message,
+                  content: content.contents
+                    .map((item: any) =>
+                      item.parts.map(({ text }: any) => text).join('\n')
+                    )
+                    .join('\n')
+                }
+              : {
+                  ...message,
+                  content:
+                    content.candidates
+                      ?.map((item: any) =>
+                        item.content.parts
+                          .map(({ text }: any) => text)
+                          .join('\n')
+                      )
+                      .join('\n') || ''
+                }
+          })
+        )
       })
       .catch(e => console.log(e))
   }

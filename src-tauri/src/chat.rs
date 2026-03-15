@@ -33,7 +33,7 @@ pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result
 pub async fn get_messages(
     state: tauri::State<'_, AppState>,
     page: Option<Page>,
-) -> Result<serde_json::Value, String> {
+) -> Result<List<ChatMessage>, String> {
     let app = get_current_app(&state)?;
     let prefix = format!("message:{}:", app);
 
@@ -57,10 +57,10 @@ pub async fn get_messages(
         messages.len()
     );
     messages.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
-    Ok(json!(List {
+    Ok(List {
         items: messages,
         total: total,
         page: page.number,
-        size: page.size
-    }))
+        size: page.size,
+    })
 }
