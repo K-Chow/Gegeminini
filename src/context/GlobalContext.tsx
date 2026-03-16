@@ -43,7 +43,7 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const [chats, setChats] = useState<ChatItem[]>([
     {
       id: '0',
-      title: 'New',
+      title: 'Chat',
       path: '/chat'
     }
   ])

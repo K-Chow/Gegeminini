@@ -125,34 +125,40 @@ const ChatContainer = () => {
             className={`chat max-w-full whitespace-pre-wrap overflow-hidden ${message.role === 'USER' ? 'chat-end ' : 'chat-start'}`}
             key={`message-${index}`}
           >
-            <div className="chat-bubble max-w-[90%]">
-              <Markdown
-                children={message.content}
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code(props) {
-                    const { children, className, node, ...rest } = props
-                    const match = /language-(\w+)/.exec(className || '')
-                    return match ? (
-                      <SyntaxHighlighter
-                        {...rest}
-                        PreTag="div"
-                        children={String(children).replace(/\n$/, '')}
-                        language={match[1]}
-                        style={theme}
-                      />
-                    ) : (
-                      <code
-                        {...rest}
-                        style={{ maxWidth: '100%' }}
-                        className={className}
-                      >
-                        {children}
-                      </code>
-                    )
-                  }
-                }}
-              ></Markdown>
+            <div
+              className={`chat-bubble  max-w-[90%] ${message.role === 'USER' ? 'chat-bubble-accent' : ''} `}
+            >
+              {message.content ? (
+                <Markdown
+                  children={message.content}
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code(props) {
+                      const { children, className, node, ...rest } = props
+                      const match = /language-(\w+)/.exec(className || '')
+                      return match ? (
+                        <SyntaxHighlighter
+                          {...rest}
+                          PreTag="div"
+                          children={String(children).replace(/\n$/, '')}
+                          language={match[1]}
+                          style={theme}
+                        />
+                      ) : (
+                        <code
+                          {...rest}
+                          style={{ maxWidth: '100%' }}
+                          className={className}
+                        >
+                          {children}
+                        </code>
+                      )
+                    }
+                  }}
+                />
+              ) : (
+                <span className="text-error">遇到了一些问题</span>
+              )}
             </div>
           </div>
         ))}
