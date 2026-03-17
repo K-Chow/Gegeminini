@@ -17,6 +17,7 @@ type ChatMessage = {
 }
 
 const ChatContainer = () => {
+  const [page, setPage] = useState(1)
   const [isLoading, setLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const inputEl = useRef<HTMLInputElement>(null)
@@ -29,11 +30,10 @@ const ChatContainer = () => {
   )
 
   const getMessages = () => {
-    invoke('get_messages')
+    invoke('get_messages', { page: 1 })
       .then(result => {
-        console.log(result)
-        setMessages(
-          (result as List<ChatMessage>).items.map(message => {
+        const resultMessages = (result as List<ChatMessage>).items.map(
+          message => {
             const content = JSON.parse(message.content)
             return message.role === 'USER'
               ? {
@@ -55,8 +55,10 @@ const ChatContainer = () => {
                       )
                       .join('\n') || ''
                 }
-          })
+          }
         )
+
+        setMessages([...resultMessages, ...messages])
       })
       .catch(e => console.log(e))
   }
