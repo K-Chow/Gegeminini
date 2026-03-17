@@ -19,6 +19,7 @@ type ChatMessage = {
 
 const ChatContainer = () => {
   const [currentPage, setCurrentPage] = useState(1)
+  const [firstItemIndex, setFirstItemIndex] = useState(0)
   const [isLoading, setLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const inputEl = useRef<HTMLInputElement>(null)
@@ -37,6 +38,7 @@ const ChatContainer = () => {
         if (size * page < total) {
           setCurrentPage(page + 1)
         }
+        setFirstItemIndex(total - page * size)
         const resultMessages = items.map(message => {
           const content = JSON.parse(message.content)
           return message.role === 'USER'
@@ -119,12 +121,10 @@ const ChatContainer = () => {
 
   return (
     <section className="max-h-full flex flex-col h-screen max-w-full">
-      <div
-        className="grow overflow-y-auto p-4 space-y-4 bg-base-200 max-w-full"
-        ref={chatEl}
-      >
+      <div className="grow overflow-y-auto bg-base-200 max-w-full" ref={chatEl}>
         <Virtuoso
           data={messages}
+          firstItemIndex={firstItemIndex}
           startReached={() => {
             getMessages()
           }}
@@ -142,7 +142,7 @@ const ChatContainer = () => {
                     remarkPlugins={[remarkGfm]}
                     components={{
                       code(props) {
-                        const { children, className, node, ...rest } = props
+                        const { children, className, ...rest } = props
                         const match = /language-(\w+)/.exec(className || '')
                         return match ? (
                           <SyntaxHighlighter
