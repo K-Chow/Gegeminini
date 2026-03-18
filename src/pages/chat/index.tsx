@@ -129,7 +129,7 @@ const ChatContainer = () => {
           }}
           itemContent={(index, message: ChatMessage) => (
             <div
-              className={`chat max-w-full whitespace-pre-wrap overflow-hidden ${message.role === 'USER' ? 'chat-end ' : 'chat-start'}`}
+              className={`chat max-w-full overflow-hidden my-4 px-4 ${message.role === 'USER' ? 'chat-end ' : 'chat-start'}`}
               key={`message-${index}`}
             >
               <div
