@@ -3,7 +3,6 @@ use crate::{
     models::{ChatMessage, List, Page},
     request::get_current_app,
 };
-use serde_json::json;
 use uuid::{Timestamp, Uuid};
 
 pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result<(), String> {

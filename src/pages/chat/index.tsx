@@ -23,7 +23,6 @@ const ChatContainer = () => {
   const [isLoading, setLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const inputEl = useRef<HTMLInputElement>(null)
-  const chatEl = useRef<HTMLDivElement>(null)
   const { config } = useGlobalContext()
 
   const theme = useMemo(
@@ -32,7 +31,7 @@ const ChatContainer = () => {
   )
 
   const getMessages = () => {
-    invoke('get_messages', { page: { number: currentPage, size: 2 } })
+    invoke('get_messages', { page: { number: currentPage, size: 10 } })
       .then(result => {
         const { items = [], page, size, total } = result as List<ChatMessage>
         if (size * page < total) {
@@ -110,23 +109,23 @@ const ChatContainer = () => {
     getMessages()
   }, [])
 
-  useEffect(() => {
-    if (messages.length && chatEl.current) {
-      chatEl.current.scrollTo({
-        top: chatEl.current.scrollHeight,
-        behavior: 'smooth'
-      })
-    }
-  }, [messages, chatEl])
-
   return (
     <section className="max-h-full flex flex-col h-screen max-w-full">
-      <div className="grow overflow-y-auto bg-base-200 max-w-full" ref={chatEl}>
+      <div className="grow overflow-hidden bg-base-200 max-w-full">
         <Virtuoso
           data={messages}
           firstItemIndex={firstItemIndex}
+          followOutput="smooth"
           startReached={() => {
             getMessages()
+          }}
+          components={{
+            Header: () => (
+              <div className="h-20 p-4 text-base-content/30 text-center">
+                --.--
+              </div>
+            ),
+            Footer: () => <div className="h-24" />
           }}
           itemContent={(index, message: ChatMessage) => (
             <div
