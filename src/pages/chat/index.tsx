@@ -38,7 +38,7 @@ const ChatContainer = () => {
           setCurrentPage(page + 1)
         }
         setFirstItemIndex(total - page * size)
-        const resultMessages = items.map(message => {
+        const prevMessages = items.map(message => {
           const content = JSON.parse(message.content)
           return message.role === 'USER'
             ? {
@@ -60,7 +60,7 @@ const ChatContainer = () => {
               }
         })
 
-        setMessages([...resultMessages, ...messages])
+        setMessages([...prevMessages, ...messages])
       })
       .catch(e => console.log(e))
   }

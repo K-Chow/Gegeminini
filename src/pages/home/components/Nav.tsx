@@ -20,7 +20,7 @@ const Nav = ({ onClose }: NavProps) => {
           {chats.map((chat, index) => (
             <li key={index}>
               <Link to={chat.path}>
-                <p className="truncate">{chat.title}</p>
+                <p className="truncate">{chat.element}</p>
               </Link>
             </li>
           ))}

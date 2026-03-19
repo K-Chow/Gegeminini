@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, type ReactElement } from 'react'
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 
 export type SysConfig = {
   theme: string
@@ -12,7 +13,7 @@ interface GlobalProviderProps {
 
 type ChatItem = {
   id: string
-  title: string
+  element: ReactElement
   path: string
 }
 
@@ -25,7 +26,7 @@ const GlobalContext = createContext({
   chats: [
     {
       id: '',
-      title: '',
+      element: <></>,
       path: ''
     }
   ],
@@ -43,7 +44,7 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const [chats, setChats] = useState<ChatItem[]>([
     {
       id: '0',
-      title: 'Chat',
+      element: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
       path: '/chat'
     }
   ])
