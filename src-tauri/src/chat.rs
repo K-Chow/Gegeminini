@@ -3,7 +3,6 @@ use crate::{
     models::{ChatMessage, List, Page},
     request::get_current_app,
 };
-use tauri::webview::cookie::prefix;
 use uuid::{Timestamp, Uuid};
 
 pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result<(), String> {
@@ -26,6 +25,20 @@ pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result
     }
     state.db.apply_batch(batch).map_err(|e| e.to_string())?;
     state.db.flush().map_err(|e| e.to_string())?;
+    increment_total(&state.db, &format!("total:{}", app));
+    Ok(())
+}
+
+fn increment_total(db: &sled::Db, key: &str) -> Result<(), String> {
+    let result = db
+        .update_and_fetch(key, |old_bytes| {
+            let current = old_bytes
+                .and_then(|bytes| bincode::deserialize::<usize>(bytes).ok())
+                .unwrap_or(0);
+            let new_total = current + 1;
+            bincode::serialize(&new_total).ok()
+        })
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -43,9 +56,12 @@ pub fn get_messages(db: &sled::Db, prefix: &str, page: &Page) -> Result<Vec<Chat
     Ok(messages)
 }
 
-pub fn get_total(db: &sled::Db, prefix: &str) -> Result<usize, String> {
-    let total: usize = db.scan_prefix(prefix.as_bytes()).count();
-    Ok(total as usize)
+pub fn get_total(db: &sled::Db, key: &str) -> usize {
+    let result = db.get(key).ok().flatten(); // 简化处理，把 Err 和 None 都看作没有数据
+
+    result
+        .and_then(|bytes| bincode::deserialize::<usize>(&bytes).ok())
+        .unwrap_or(0)
 }
 
 #[tauri::command]
@@ -57,7 +73,7 @@ pub async fn response_messages(
     let prefix = format!("message:{}:", app);
     let page = page.unwrap_or_default();
     let messages = get_messages(&state.db, &prefix, &page)?;
-    let total = get_total(&state.db, &prefix)?;
+    let total = get_total(&state.db, &prefix);
 
     Ok(List {
         items: messages,

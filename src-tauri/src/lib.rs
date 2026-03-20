@@ -31,7 +31,7 @@ pub fn run() {
             config::set_sys_config,
             config::get_sys_config,
             config::delete_data,
-            chat::get_messages
+            chat::response_messages,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

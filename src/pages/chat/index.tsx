@@ -31,7 +31,7 @@ const ChatContainer = () => {
   )
 
   const getMessages = () => {
-    invoke('get_messages', { page: { number: currentPage, size: 10 } })
+    invoke('response_messages', { page: { number: currentPage, size: 10 } })
       .then(result => {
         const { items = [], page, size, total } = result as List<ChatMessage>
         if (size * page < total) {
