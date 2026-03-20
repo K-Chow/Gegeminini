@@ -3,6 +3,7 @@ use crate::{
     models::{ChatMessage, List, Page},
     request::get_current_app,
 };
+use tauri::webview::cookie::prefix;
 use uuid::{Timestamp, Uuid};
 
 pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result<(), String> {
@@ -28,34 +29,36 @@ pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result
     Ok(())
 }
 
+pub fn get_messages(db: &sled::Db, prefix: &str, page: &Page) -> Result<Vec<ChatMessage>, String> {
+    let skip = (page.number.max(1) - 1) * page.size;
+    let count: usize = page.size;
+    let mut messages = Vec::new();
+    for item in db.scan_prefix(prefix).rev().skip(skip).take(count) {
+        let (_key, value) = item.map_err(|e| e.to_string())?;
+        let message: ChatMessage = bincode::deserialize(&value).map_err(|e| e.to_string())?;
+        messages.push(message);
+    }
+
+    messages.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+    Ok(messages)
+}
+
+pub fn get_total(db: &sled::Db, prefix: &str) -> Result<usize, String> {
+    let total: usize = db.scan_prefix(prefix.as_bytes()).count();
+    Ok(total as usize)
+}
+
 #[tauri::command]
-pub async fn get_messages(
+pub async fn response_messages(
     state: tauri::State<'_, AppState>,
     page: Option<Page>,
 ) -> Result<List<ChatMessage>, String> {
     let app = get_current_app(&state)?;
     let prefix = format!("message:{}:", app);
-
     let page = page.unwrap_or_default();
-    let skip = (page.number.max(1) - 1) * page.size;
-    let count: usize = page.size;
+    let messages = get_messages(&state.db, &prefix, &page)?;
+    let total = get_total(&state.db, &prefix)?;
 
-    let mut messages = Vec::new();
-
-    let total = state.db.scan_prefix(prefix.as_bytes()).count();
-
-    for item in state.db.scan_prefix(prefix).rev().skip(skip).take(count) {
-        let (_key, value) = item.map_err(|e| e.to_string())?;
-        let message: ChatMessage = bincode::deserialize(&value).map_err(|e| e.to_string())?;
-        messages.push(message);
-    }
-    println!(
-        "get messages: skip {}, count {}, actual {}",
-        skip,
-        count,
-        messages.len()
-    );
-    messages.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
     Ok(List {
         items: messages,
         total: total,
