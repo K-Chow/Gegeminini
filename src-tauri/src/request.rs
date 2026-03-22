@@ -73,29 +73,32 @@ async fn fetcher(url: String) -> Result<Value, String> {
 }
 
 #[tauri::command]
-pub async fn send_message(
-    state: tauri::State<'_, AppState>,
-    contents: Value,
-) -> Result<Value, String> {
+pub async fn send_message(state: tauri::State<'_, AppState>, text: Value) -> Result<Value, String> {
     let model = get_model(&state)?;
     let url = format!("{}/{}:generateContent", GEMINI_BASE_URL, model);
     let app = get_current_app(&state)?;
 
     let history_message = get_messages(&state.db, &format!("message:{}", app), &Page::default())?;
 
-    let mut all_contents = Vec::new();
+    let mut contents: Vec<Value> = history_message
+        .iter()
+        .map(|m| {
+            json!({
+                "role": if m.role == "assistant" { "model" } else { "user" },
+                "content":{
+                  "parts": [{ "text": m.content }]
+                }
+            })
+        })
+        .collect();
 
-    for item in history_message {
-        all_contents.push(json!({
-          "role": item.role,
-          "parts":[{
-            "text": item.content
-          }]
-        }))
-    }
+    contents.push(json!({
+        "role": "USER",
+        "parts": [{ "text": text }]
+    }));
 
     let payload = json!({
-      "contents": &contents
+      "contents": contents
     });
 
     let result = api_request(&state, url, payload.clone())
