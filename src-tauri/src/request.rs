@@ -1,6 +1,6 @@
-use crate::chat::save_message;
+use crate::chat::{get_messages, save_message};
 use crate::constants::GEMINI_BASE_URL;
-use crate::models::{ApiConfigItem, ChatMessage, SysConfig};
+use crate::models::{ApiConfigItem, ChatMessage, Page, SysConfig};
 use crate::AppState;
 use reqwest::Client;
 use serde_json::{json, Value};
@@ -80,6 +80,19 @@ pub async fn send_message(
     let model = get_model(&state)?;
     let url = format!("{}/{}:generateContent", GEMINI_BASE_URL, model);
     let app = get_current_app(&state)?;
+
+    let history_message = get_messages(&state.db, &format!("message:{}", app), &Page::default())?;
+
+    let mut all_contents = Vec::new();
+
+    for item in history_message {
+        all_contents.push(json!({
+          "role": item.role,
+          "parts":[{
+            "text": item.content
+          }]
+        }))
+    }
 
     let payload = json!({
       "contents": &contents
