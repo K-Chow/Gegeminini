@@ -33,14 +33,18 @@ impl Default for SysConfig {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct ChatMessage {
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
+pub struct GeminiStruct {
     pub id: String,
     pub app: String,
     pub role: String,
     pub content: String,
     pub content_type: String,
     pub timestamp: i64,
+    pub model: Option<String>,
+    pub input_tokens: Option<i32>,
+    pub output_tokens: Option<i32>,
+    pub finish_reason: Option<String>,
 }
 
 #[derive(Serialize)]

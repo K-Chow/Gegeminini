@@ -1,11 +1,11 @@
 use crate::AppState;
 use crate::{
-    models::{ChatMessage, List, Page},
+    models::{GeminiStruct, List, Page},
     request::get_current_app,
 };
 use uuid::{Timestamp, Uuid};
 
-pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result<(), String> {
+pub async fn save_message(state: AppState, messages: Vec<GeminiStruct>) -> Result<(), String> {
     let app = get_current_app(&state)?;
     let mut batch = sled::Batch::default();
     let base_time = chrono::Utc::now().timestamp_nanos_opt().unwrap();
@@ -15,7 +15,7 @@ pub async fn save_message(state: AppState, messages: Vec<ChatMessage>) -> Result
         let nanos = (base_nanos % 1_000_000_000) as u32;
         let uuid = Uuid::new_v7(Timestamp::from_unix(uuid::NoContext, secs, nanos));
         let key = format!("message:{}:{}", app, uuid);
-        let msg = ChatMessage {
+        let msg = GeminiStruct {
             id: uuid.to_string(),
             timestamp: base_nanos,
             ..msg
@@ -42,13 +42,13 @@ fn increment_total(db: &sled::Db, key: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn get_messages(db: &sled::Db, prefix: &str, page: &Page) -> Result<Vec<ChatMessage>, String> {
+pub fn get_messages(db: &sled::Db, prefix: &str, page: &Page) -> Result<Vec<GeminiStruct>, String> {
     let skip = (page.number.max(1) - 1) * page.size;
     let count: usize = page.size;
     let mut messages = Vec::new();
     for item in db.scan_prefix(prefix).rev().skip(skip).take(count) {
         let (_key, value) = item.map_err(|e| e.to_string())?;
-        let message: ChatMessage = bincode::deserialize(&value).map_err(|e| e.to_string())?;
+        let message = bincode::deserialize::<GeminiStruct>(&value).map_err(|e| e.to_string())?;
         messages.push(message);
     }
 
@@ -68,7 +68,7 @@ pub fn get_total(db: &sled::Db, key: &str) -> usize {
 pub async fn response_messages(
     state: tauri::State<'_, AppState>,
     page: Option<Page>,
-) -> Result<List<ChatMessage>, String> {
+) -> Result<List<GeminiStruct>, String> {
     let app = get_current_app(&state)?;
     let prefix = format!("message:{}:", app);
     let page = page.unwrap_or_default();

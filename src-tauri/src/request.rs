@@ -1,6 +1,6 @@
 use crate::chat::{get_messages, save_message};
 use crate::constants::GEMINI_BASE_URL;
-use crate::models::{ApiConfigItem, ChatMessage, Page, SysConfig};
+use crate::models::{ApiConfigItem, GeminiStruct, Page, SysConfig};
 use crate::AppState;
 use reqwest::Client;
 use serde_json::{json, Value};
@@ -113,21 +113,23 @@ pub async fn send_message(state: tauri::State<'_, AppState>, text: Value) -> Res
         let _ = save_message(
             state_handle,
             vec![
-                ChatMessage {
+                GeminiStruct {
                     id: "".to_string(),
                     app: app.clone(),
                     role: "USER".to_string(),
                     content: save_payload,
                     content_type: "application/json".to_string(),
                     timestamp: 0,
+                    ..Default::default()
                 },
-                ChatMessage {
+                GeminiStruct {
                     id: "".to_string(),
                     app: app,
                     role: "MODEL".to_string(),
                     content: save_result,
                     content_type: "application/json".to_string(),
                     timestamp: 0,
+                    ..Default::default()
                 },
             ],
         )
