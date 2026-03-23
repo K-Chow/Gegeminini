@@ -1,5 +1,6 @@
 use crate::chat::{get_messages, save_message};
 use crate::constants::GEMINI_BASE_URL;
+use crate::gemini::parse_gemini_response;
 use crate::models::{ApiConfigItem, GeminiStruct, Page, SysConfig};
 use crate::AppState;
 use reqwest::Client;
@@ -73,7 +74,10 @@ async fn fetcher(url: String) -> Result<Value, String> {
 }
 
 #[tauri::command]
-pub async fn send_message(state: tauri::State<'_, AppState>, text: Value) -> Result<Value, String> {
+pub async fn send_message(
+    state: tauri::State<'_, AppState>,
+    text: String,
+) -> Result<Value, String> {
     let model = get_model(&state)?;
     let url = format!("{}/{}:generateContent", GEMINI_BASE_URL, model);
     let app = get_current_app(&state)?;
@@ -84,16 +88,14 @@ pub async fn send_message(state: tauri::State<'_, AppState>, text: Value) -> Res
         .iter()
         .map(|m| {
             json!({
-                "role": if m.role == "assistant" { "model" } else { "user" },
-                "content":{
-                  "parts": [{ "text": m.content }]
-                }
+                "role": m.role,
+                "parts": [{ "text": m.content }]
             })
         })
         .collect();
 
     contents.push(json!({
-        "role": "USER",
+        "role": "user",
         "parts": [{ "text": text }]
     }));
 
@@ -101,35 +103,28 @@ pub async fn send_message(state: tauri::State<'_, AppState>, text: Value) -> Res
       "contents": contents
     });
 
-    let result = api_request(&state, url, payload.clone())
+    let result: Value = api_request(&state, url, payload.clone())
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e: String| e.to_string())?;
 
     let state_handle = state.inner().clone();
-    let save_payload = payload.to_string();
-    let save_result = result.clone().to_string();
+
+    let save_result = parse_gemini_response(&result)?;
 
     spawn(async move {
         let _ = save_message(
             state_handle,
             vec![
                 GeminiStruct {
-                    id: "".to_string(),
                     app: app.clone(),
                     role: "USER".to_string(),
-                    content: save_payload,
-                    content_type: "application/json".to_string(),
-                    timestamp: 0,
+                    content: text,
+                    content_type: "text".to_string(),
                     ..Default::default()
                 },
                 GeminiStruct {
-                    id: "".to_string(),
-                    app: app,
-                    role: "MODEL".to_string(),
-                    content: save_result,
-                    content_type: "application/json".to_string(),
-                    timestamp: 0,
-                    ..Default::default()
+                    app: app.clone(),
+                    ..save_result
                 },
             ],
         )

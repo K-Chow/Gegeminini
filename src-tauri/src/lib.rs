@@ -1,6 +1,7 @@
 mod chat;
 mod config;
 mod constants;
+mod gemini;
 mod models;
 mod request;
 use tauri::Manager;
