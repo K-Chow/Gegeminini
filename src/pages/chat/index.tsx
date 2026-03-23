@@ -38,29 +38,8 @@ const ChatContainer = () => {
           setCurrentPage(page + 1)
         }
         setFirstItemIndex(total - page * size)
-        const prevMessages = items.map(message => {
-          const content = JSON.parse(message.content)
-          return message.role === 'USER'
-            ? {
-                ...message,
-                content: content.contents
-                  .map((item: any) =>
-                    item.parts.map(({ text }: any) => text).join('\n')
-                  )
-                  .join('\n')
-              }
-            : {
-                ...message,
-                content:
-                  content.candidates
-                    ?.map((item: any) =>
-                      item.content.parts.map(({ text }: any) => text).join('\n')
-                    )
-                    .join('\n') || ''
-              }
-        })
 
-        setMessages([...prevMessages, ...messages])
+        setMessages([...items, ...messages])
       })
       .catch(e => console.log(e))
   }
@@ -91,15 +70,7 @@ const ChatContainer = () => {
       ]
     })
       .then(result => {
-        const { candidates = [] } = result as any
-        setMessages(prev => [
-          ...prev,
-          ...candidates.map((item: any) => ({
-            content: item.content.parts.map(({ text }: any) => text).join('\n'),
-            time: Date.now(),
-            role: 'MODEL'
-          }))
-        ])
+        setMessages(prev => [...prev, ...(result as any)])
       })
       .catch(e => console.log(e))
       .finally(() => setLoading(false))

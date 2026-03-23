@@ -109,7 +109,8 @@ pub async fn send_message(
 
     let state_handle = state.inner().clone();
 
-    let save_result = parse_gemini_response(&result)?;
+    let parsed_result = parse_gemini_response(&result)?;
+    let response_result = json!(vec![&parsed_result]);
 
     spawn(async move {
         let _ = save_message(
@@ -124,7 +125,7 @@ pub async fn send_message(
                 },
                 GeminiStruct {
                     app: app.clone(),
-                    ..save_result
+                    ..parsed_result
                 },
             ],
         )
@@ -132,7 +133,7 @@ pub async fn send_message(
         .map_err(|e| e.to_string());
     });
 
-    Ok(result)
+    Ok(response_result)
 }
 
 #[tauri::command]
