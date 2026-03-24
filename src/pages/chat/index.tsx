@@ -33,6 +33,7 @@ const ChatContainer = () => {
   const getMessages = () => {
     invoke('response_messages', { page: { number: currentPage, size: 10 } })
       .then(result => {
+        console.log(result)
         const { items = [], page, size, total } = result as List<ChatMessage>
         if (size * page < total) {
           setCurrentPage(page + 1)
@@ -59,17 +60,10 @@ const ChatContainer = () => {
     ])
 
     invoke('send_message', {
-      contents: [
-        {
-          parts: [
-            {
-              text
-            }
-          ]
-        }
-      ]
+      text
     })
       .then(result => {
+        console.log(result)
         setMessages(prev => [...prev, ...(result as any)])
       })
       .catch(e => console.log(e))

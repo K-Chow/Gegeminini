@@ -109,7 +109,10 @@ pub async fn send_message(
 
     let state_handle = state.inner().clone();
 
-    let parsed_result = parse_gemini_response(&result)?;
+    let parsed_result = GeminiStruct {
+        app: app.clone(),
+        ..parse_gemini_response(&result)?
+    };
     let response_result = json!(vec![&parsed_result]);
 
     spawn(async move {
@@ -123,10 +126,7 @@ pub async fn send_message(
                     content_type: "text".to_string(),
                     ..Default::default()
                 },
-                GeminiStruct {
-                    app: app.clone(),
-                    ..parsed_result
-                },
+                parsed_result,
             ],
         )
         .await
