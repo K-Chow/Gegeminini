@@ -25,21 +25,28 @@ pub async fn save_message(state: AppState, messages: Vec<GeminiStruct>) -> Resul
     }
     state.db.apply_batch(batch).map_err(|e| e.to_string())?;
     state.db.flush().map_err(|e| e.to_string())?;
-    increment_total(&state.db, &format!("total:{}", app));
+    increment_total(&state.db, &format!("total:{}", app), 2)?;
     Ok(())
 }
 
-fn increment_total(db: &sled::Db, key: &str) -> Result<(), String> {
-    let result = db
+fn increment_total(db: &sled::Db, key: &str, count: usize) -> Result<(), String> {
+    let _ = db
         .update_and_fetch(key, |old_bytes| {
             let current = old_bytes
                 .and_then(|bytes| bincode::deserialize::<usize>(bytes).ok())
                 .unwrap_or(0);
-            let new_total = current + 1;
+            let new_total = current + count;
             bincode::serialize(&new_total).ok()
         })
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+pub fn get_total(db: &sled::Db, key: &str) -> usize {
+    let result = db.get(key).ok().flatten();
+    result
+        .and_then(|bytes| bincode::deserialize::<usize>(&bytes).ok())
+        .unwrap_or(0)
 }
 
 pub fn get_messages(db: &sled::Db, prefix: &str, page: &Page) -> Result<Vec<GeminiStruct>, String> {
@@ -56,14 +63,6 @@ pub fn get_messages(db: &sled::Db, prefix: &str, page: &Page) -> Result<Vec<Gemi
     Ok(messages)
 }
 
-pub fn get_total(db: &sled::Db, key: &str) -> usize {
-    let result = db.get(key).ok().flatten(); // 简化处理，把 Err 和 None 都看作没有数据
-
-    result
-        .and_then(|bytes| bincode::deserialize::<usize>(&bytes).ok())
-        .unwrap_or(0)
-}
-
 #[tauri::command]
 pub async fn response_messages(
     state: tauri::State<'_, AppState>,
@@ -73,7 +72,7 @@ pub async fn response_messages(
     let prefix = format!("message:{}:", app);
     let page = page.unwrap_or_default();
     let messages = get_messages(&state.db, &prefix, &page)?;
-    let total = get_total(&state.db, &prefix);
+    let total = get_total(&state.db, &format!("total:{}", app));
 
     Ok(List {
         items: messages,

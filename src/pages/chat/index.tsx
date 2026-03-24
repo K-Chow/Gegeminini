@@ -19,7 +19,7 @@ type ChatMessage = {
 
 const ChatContainer = () => {
   const [currentPage, setCurrentPage] = useState(1)
-  const [firstItemIndex, setFirstItemIndex] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
   const [isLoading, setLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const inputEl = useRef<HTMLInputElement>(null)
@@ -31,15 +31,12 @@ const ChatContainer = () => {
   )
 
   const getMessages = () => {
-    invoke('response_messages', { page: { number: currentPage, size: 10 } })
+    invoke('response_messages', { page: { number: currentPage, size: 5 } })
       .then(result => {
-        console.log(result)
         const { items = [], page, size, total } = result as List<ChatMessage>
-        if (size * page < total) {
-          setCurrentPage(page + 1)
-        }
-        setFirstItemIndex(total - page * size)
-
+        const isHasMore = size * page < total
+        if (isHasMore) setCurrentPage(page + 1)
+        setHasMore(isHasMore)
         setMessages([...items, ...messages])
       })
       .catch(e => console.log(e))
@@ -63,7 +60,6 @@ const ChatContainer = () => {
       text
     })
       .then(result => {
-        console.log(result)
         setMessages(prev => [...prev, ...(result as any)])
       })
       .catch(e => console.log(e))
@@ -79,15 +75,13 @@ const ChatContainer = () => {
       <div className="grow overflow-hidden bg-base-200 max-w-full">
         <Virtuoso
           data={messages}
-          firstItemIndex={firstItemIndex}
+          firstItemIndex={currentPage}
           followOutput="smooth"
-          startReached={() => {
-            getMessages()
-          }}
+          startReached={() => (hasMore ? getMessages() : null)}
           components={{
             Header: () => (
               <div className="h-20 p-4 text-base-content/30 text-center">
-                --.--
+                ----
               </div>
             ),
             Footer: () => <div className="h-24" />
