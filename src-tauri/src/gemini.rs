@@ -3,7 +3,11 @@ use serde_json::Value;
 
 pub fn parse_gemini_response(response: &Value) -> Result<GeminiStruct, String> {
     let candidates = &response["candidates"][0];
-    let text = candidates["content"]["parts"][0]["text"].to_string();
+    let text = candidates["content"]["parts"][0]["text"]
+        .as_str()
+        .unwrap_or("")
+        .replace("\\n", "\n")
+        .to_string();
     let finish_reason = candidates["finishReason"].as_str().map(String::from);
 
     Ok(GeminiStruct {

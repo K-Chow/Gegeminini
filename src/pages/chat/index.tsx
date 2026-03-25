@@ -8,7 +8,7 @@ import {
   materialLight
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useGlobalContext } from '@/context/GlobalContext'
-import { Virtuoso } from 'react-virtuoso'
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso'
 import type { List } from '@/types'
 
 type ChatMessage = {
@@ -18,12 +18,14 @@ type ChatMessage = {
 }
 
 const ChatContainer = () => {
+  const { config } = useGlobalContext()
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [isLoading, setLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const inputEl = useRef<HTMLInputElement>(null)
-  const { config } = useGlobalContext()
+
+  const virtuosoRef = useRef<VirtuosoHandle>(null)
 
   const theme = useMemo(
     () => (config.theme === 'light' ? materialLight : materialDark),
@@ -70,13 +72,20 @@ const ChatContainer = () => {
     getMessages()
   }, [])
 
+  useEffect(() => {
+    virtuosoRef.current?.scrollToIndex({
+      index: messages.length - 1,
+      behavior: 'smooth'
+    })
+  }, [messages])
+
   return (
     <section className="max-h-full flex flex-col h-screen max-w-full">
       <div className="grow overflow-hidden bg-base-200 max-w-full">
         <Virtuoso
           data={messages}
+          ref={virtuosoRef}
           firstItemIndex={currentPage}
-          followOutput="smooth"
           startReached={() => (hasMore ? getMessages() : null)}
           components={{
             Header: () => (
