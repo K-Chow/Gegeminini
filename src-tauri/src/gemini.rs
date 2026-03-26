@@ -1,6 +1,7 @@
 use crate::chat::get_messages;
 use crate::models::GeminiStruct;
 use crate::models::Page;
+use chrono::{Local, Utc};
 use serde_json::{json, Value};
 
 pub fn build_gemini_request(db: &sled::Db, app: &str, text: &str) -> Result<Value, String> {
@@ -19,10 +20,13 @@ pub fn build_gemini_request(db: &sled::Db, app: &str, text: &str) -> Result<Valu
         "role": "user",
         "parts": [{ "text": text }]
     }));
+    let utc_time = Utc::now();
+    let local_time = Local::now();
+    let time_zone = local_time.format("%:z").to_string();
     let payload: Value = json!({
       "contents": contents,
       "system_instruction": {
-        "parts": { "text": format!("当前时间：{}", chrono::Local::now()) }
+        "parts": { "text": format!("当前本地时间: {}, 时区: {}, UTC时间: {}", local_time, time_zone, utc_time) }
       },
       "tools": [{ "google_search": {} }]
     });
