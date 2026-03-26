@@ -1,5 +1,30 @@
+use crate::chat::get_messages;
 use crate::models::GeminiStruct;
-use serde_json::Value;
+use crate::models::Page;
+use serde_json::{json, Value};
+
+pub fn build_gemini_request(db: &sled::Db, app: &str, text: &str) -> Result<Value, String> {
+    let history_message = get_messages(db, &format!("message:{}", app), &Page::default())?;
+
+    let mut contents: Vec<Value> = history_message
+        .iter()
+        .map(|m| {
+            json!({
+                "role": m.role,
+                "parts": [{ "text": m.content }]
+            })
+        })
+        .collect();
+    contents.push(json!({
+        "role": "user",
+        "parts": [{ "text": text }]
+    }));
+    let payload: Value = json!({
+      "contents": contents
+    });
+
+    Ok(payload)
+}
 
 pub fn parse_gemini_response(response: &Value) -> Result<GeminiStruct, String> {
     let candidates = &response["candidates"][0];

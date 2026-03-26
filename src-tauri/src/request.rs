@@ -1,6 +1,6 @@
 use crate::chat::{get_messages, save_message};
 use crate::constants::GEMINI_BASE_URL;
-use crate::gemini::parse_gemini_response;
+use crate::gemini::{build_gemini_request, parse_gemini_response};
 use crate::models::{ApiConfigItem, GeminiStruct, Page, SysConfig};
 use crate::AppState;
 use reqwest::Client;
@@ -82,26 +82,7 @@ pub async fn send_message(
     let url = format!("{}/{}:generateContent", GEMINI_BASE_URL, model);
     let app = get_current_app(&state)?;
 
-    let history_message = get_messages(&state.db, &format!("message:{}", app), &Page::default())?;
-
-    let mut contents: Vec<Value> = history_message
-        .iter()
-        .map(|m| {
-            json!({
-                "role": m.role,
-                "parts": [{ "text": m.content }]
-            })
-        })
-        .collect();
-
-    contents.push(json!({
-        "role": "user",
-        "parts": [{ "text": text }]
-    }));
-
-    let payload = json!({
-      "contents": contents
-    });
+    let payload = build_gemini_request(&state.db, &app, &text)?;
 
     let result: Value = api_request(&state, url, payload.clone())
         .await
