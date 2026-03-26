@@ -20,7 +20,11 @@ pub fn build_gemini_request(db: &sled::Db, app: &str, text: &str) -> Result<Valu
         "parts": [{ "text": text }]
     }));
     let payload: Value = json!({
-      "contents": contents
+      "contents": contents,
+      "system_instruction": {
+        "parts": { "text": format!("当前时间：{}", chrono::Local::now()) }
+      },
+      "tools": [{ "google_search": {} }]
     });
 
     Ok(payload)
