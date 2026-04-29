@@ -2,9 +2,11 @@ import { Navigate } from 'react-router-dom'
 import Home from '@/pages/home'
 import Chat from '@/pages/chat'
 import Settings from '@/pages/settings'
+import Voice from '@/pages/voice'
 import {
   ChatBubbleLeftRightIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 
 export const subRoutes = [
@@ -21,6 +23,11 @@ export const subRoutes = [
     path: 'chat',
     element: <Chat />,
     icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />
+  },
+  {
+    path: 'voice',
+    element: <Voice />,
+    icon: <SparklesIcon className="w-6 h-6" />
   },
   {
     path: 'chat/:id',

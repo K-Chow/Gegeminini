@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, type ReactElement } from 'react'
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import {
+  ChatBubbleLeftRightIcon,
+  SparklesIcon
+} from '@heroicons/react/24/outline'
 
 export type SysConfig = {
   theme: string
@@ -46,6 +49,11 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
       id: '0',
       element: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
       path: '/chat'
+    },
+    {
+      id: '1',
+      element: <SparklesIcon className="w-6 h-6" />,
+      path: '/voice'
     }
   ])
 
