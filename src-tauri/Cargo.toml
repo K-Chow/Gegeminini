@@ -31,3 +31,6 @@ tokio = { version = "1", features = ["full"] }
 futures-util = "0.3"
 chrono = "0.4"
 uuid = { version = "1.22.0", features = ["v7"] }
+
+cpal = "0.15"
+hound = "3.5"
