@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use std::sync::Arc;
+use tokio::net::TcpStream;
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -103,4 +105,10 @@ impl Default for List<serde_json::Value> {
             size: 20,
         }
     }
+}
+
+struct GeminiSession {
+    ws_sender: Arc<Mutex<SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>,
+    record_stream: Option<cpal::Stream>,
+    output_sink: Arc<rodio::Sink>,
 }

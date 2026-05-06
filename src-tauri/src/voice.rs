@@ -21,5 +21,24 @@ async fn trigger_recording(file_path: String) -> Result<(), String> {
 
     let mut writer = hound::WavWriter::create(file_path, spec).unwrap();
 
+    let stream = device
+        .build_input_stream(
+            &config.into(),
+            move |data: &[f32], _: &cpal::InputCallbackInfo| {
+                for &sample in data {
+                    writer.write_sample(sample).unwrap();
+                }
+            },
+            move |err| {
+                eprintln!("An error occurred on the input audio stream: {}", err);
+            },
+        )
+        .unwrap();
+
+    stream.play().map_err(|e| e.to_string())?;
+
+    std::thread::sleep(std::time::Duration::from_secs(5));
+    drop(stream);
+
     Ok(())
 }
