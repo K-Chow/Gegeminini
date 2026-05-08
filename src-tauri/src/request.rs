@@ -30,7 +30,7 @@ pub fn get_model(app_state: &AppState) -> Result<String, String> {
     Ok(model)
 }
 
-fn get_api_key(app_state: &AppState) -> Result<String, String> {
+pub fn get_api_key(app_state: &AppState) -> Result<String, String> {
     let current_app: String = get_current_app(app_state)?;
 
     let api_key = app_state

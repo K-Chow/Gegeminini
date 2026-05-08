@@ -10,9 +10,9 @@ type NavProps = {
 const Nav = ({ onClose }: NavProps) => {
   const { chats, setChats } = useGlobalContext()
   const { pathname } = useLocation()
-  const [currentChat, setCurrentChat] = useState(chats[0])
+  // const [currentChat, setCurrentChat] = useState(chats[0])
   return (
-    <div className="drawer-side is-drawer-close:overflow-visible shadow-2xl border-r-1 border-base-300">
+    <div className="drawer-side is-drawer-close:overflow-visible shadow-2xl border-r border-base-300">
       <label className="drawer-overlay" onClick={() => onClose()} />
       <div className="flex min-h-full flex-col items-start bg-base-100 text-base-content is-drawer-close:w-16 is-drawer-open:w-48">
         <div className="w-full h-18" />
