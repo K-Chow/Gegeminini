@@ -51,8 +51,7 @@ pub async fn connect_to_gemini(api_key: &str) -> Result<GeminiStream, String> {
     Ok(ws_stream)
 }
 
-#[tauri::command]
-async fn start_session(state: tauri::State<'_, AppState>) -> Result<(), String> {
+pub async fn start_session(state: tauri::State<'_, AppState>) -> Result<(), String> {
     let api_key = get_api_key(&state)?;
     let ws_stream = connect_to_gemini(&api_key).await?;
 

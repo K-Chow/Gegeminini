@@ -4,6 +4,8 @@ mod constants;
 mod gemini;
 mod models;
 mod request;
+mod socket;
+mod voice;
 use tauri::Manager;
 
 use crate::config::{init_data, init_db};
@@ -32,6 +34,8 @@ pub fn run() {
             config::set_sys_config,
             config::get_sys_config,
             config::delete_data,
+            socket::start_socket,
+            voice::trigger_recording,
             chat::response_messages,
         ])
         .run(tauri::generate_context!())
