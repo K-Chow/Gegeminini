@@ -1,7 +1,7 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 #[tauri::command]
-async fn trigger_recording(file_path: String) -> Result<(), String> {
+pub async fn trigger_recording(file_path: String) -> Result<(), String> {
     // Here you would implement the logic to start recording audio using cpal and hound.
     // This is a placeholder implementation.
     let host = cpal::default_host();
@@ -15,7 +15,7 @@ async fn trigger_recording(file_path: String) -> Result<(), String> {
     let spec = hound::WavSpec {
         channels: config.channels(),
         sample_rate: config.sample_rate().0,
-        bits_pre_sample: 16,
+        bits_per_sample: 16,
         sample_format: hound::SampleFormat::Float,
     };
 
@@ -32,6 +32,7 @@ async fn trigger_recording(file_path: String) -> Result<(), String> {
             move |err| {
                 eprintln!("An error occurred on the input audio stream: {}", err);
             },
+            None,
         )
         .unwrap();
 

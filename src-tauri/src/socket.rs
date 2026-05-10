@@ -1,7 +1,8 @@
 use crate::constants::GEMINI_STREAM_URL;
 use crate::request::get_api_key;
+use crate::AppState;
 use futures_util::{SinkExt, StreamExt};
-use std::env;
+use std::sync::{Arc, Mutex};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
 type GeminiStream =
@@ -10,7 +11,7 @@ type GeminiStream =
 /// 建立与 Gemini Live API 的 WebSocket 连接并完成配置初始化
 pub async fn connect_to_gemini(api_key: &str) -> Result<GeminiStream, String> {
     // 1. 构造 WebSocket URL (Gemini v1alpha 实时双向流端点)
-    let url_str = format!(GEMINI_STREAM_URL, api_key);
+    let url_str = format!("{}{}", GEMINI_STREAM_URL, api_key);
 
     println!("正在连接到 Gemini Live API...");
 
@@ -22,27 +23,25 @@ pub async fn connect_to_gemini(api_key: &str) -> Result<GeminiStream, String> {
     println!("连接成功！HTTP 状态码: {}", response.status());
 
     // 3. 构造第一帧初始化配置 (Setup Frame)
-    let setup_msg = LiveClientMessage {
-        setup: Some(GeminiSetup {
-            model: "models/gemini-2.5-flash".to_string(), // 使用 native-audio 支持最好的模型
-            generation_config: GenerationConfig {
-                response_modalities: vec!["AUDIO".to_string()], // 只要音频返回
-                speech_config: SpeechConfig {
-                    voice_config: VoiceConfig {
-                        prebuilt_voice_config: PrebuiltVoiceConfig {
-                            voice_name: "Puck".to_string(), // 可换 Puck, Aoede, Fenrir 等音色
-                        },
-                    },
-                },
-            },
-        }),
-        client_content: None,
-    };
-
-    // 4. 将 Setup 配置转换为 JSON 并发送
-    let setup_json = serde_json::to_string(&setup_msg).unwrap();
+    let setup_json = serde_json::json!({
+        "setup": {
+            "model": "models/gemini-2.5-flash",
+            "generation_config": {
+                "response_modalities": ["AUDIO"],
+                "speech_config": {
+                    "voice_config": {
+                        "prebuilt_voice_config": {
+                            "voice_name": "Puck"
+                        }
+                    }
+                }
+            }
+        },
+        "client_content": null
+    })
+    .to_string();
     ws_stream
-        .send(Message::Text(setup_json))
+        .send(Message::Text(setup_json.into()))
         .await
         .map_err(|e| format!("发送初始化配置失败: {}", e))?;
 
@@ -51,6 +50,7 @@ pub async fn connect_to_gemini(api_key: &str) -> Result<GeminiStream, String> {
     Ok(ws_stream)
 }
 
+#[tauri::command]
 pub async fn start_session(state: tauri::State<'_, AppState>) -> Result<(), String> {
     let api_key = get_api_key(&state)?;
     let ws_stream = connect_to_gemini(&api_key).await?;
@@ -84,8 +84,8 @@ pub async fn start_session(state: tauri::State<'_, AppState>) -> Result<(), Stri
     });
 
     // 5. 将发送端保存进状态中，后续 start_record 指令就可以利用它实时发送麦克风数据了
-    let mut session_guard = state.session_lock.lock().unwrap();
-    *session_guard = Some(shared_sender);
+    // let mut session_guard = state.session_lock.lock().unwrap();
+    // *session_guard = Some(shared_sender);
 
     Ok(())
 }

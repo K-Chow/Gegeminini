@@ -6,10 +6,13 @@ mod models;
 mod request;
 mod socket;
 mod voice;
+use crate::models::GeminiSession;
+use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
 use crate::config::{init_data, init_db};
-use std::sync::Arc;
+
+struct LiveSession(Mutex<Option<GeminiSession>>);
 
 #[derive(Clone)] //Enable to clone app state
 pub struct AppState {
@@ -34,7 +37,6 @@ pub fn run() {
             config::set_sys_config,
             config::get_sys_config,
             config::delete_data,
-            socket::start_socket,
             voice::trigger_recording,
             chat::response_messages,
         ])

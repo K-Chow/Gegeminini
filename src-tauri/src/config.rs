@@ -4,6 +4,7 @@ use serde_json::json;
 use sled::Batch;
 use std::sync::Arc;
 use tauri::{App, Manager};
+use tokio::sync::Mutex;
 
 pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
     enum InitList {

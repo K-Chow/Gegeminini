@@ -1,7 +1,9 @@
+use futures_util::stream::SplitSink;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::net::TcpStream;
-use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
+use tokio::sync::Mutex;
+use tokio_tungstenite::{tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -107,8 +109,11 @@ impl Default for List<serde_json::Value> {
     }
 }
 
-struct GeminiSession {
-    ws_sender: Arc<Mutex<SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>,
-    record_stream: Option<cpal::Stream>,
-    output_sink: Arc<rodio::Sink>,
+type WsStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
+
+pub type GeminiSink = SplitSink<WsStream, Message>;
+
+pub struct GeminiSession {
+    pub ws_sender: Arc<Mutex<GeminiSink>>,
+    pub record_stream: Option<cpal::Stream>,
 }
