@@ -35,7 +35,7 @@ pub fn run() {
                 gemini_tx: gemini_tx, // 这是从 main 函数作用域捕获的
             });
 
-            let state = app.state();
+            let state = app.state::<AppState>();
             let _init_data = init_data(state);
 
             Ok(())
