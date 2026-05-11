@@ -1,7 +1,7 @@
 use crate::models::{ApiConfigItem, CommandResult, SysConfig};
 use crate::AppState;
 use serde_json::json;
-use sled::Batch;
+use sled::{Batch, Db};
 use std::sync::Arc;
 use tauri::{App, Manager};
 use tokio::sync::Mutex;
@@ -39,7 +39,7 @@ pub fn init_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
     Ok(())
 }
 
-pub fn init_db(app: &mut App) -> Result<(), String> {
+pub fn init_db(app: &mut App) -> Result<Arc<Db>, String> {
     println!(" ---- 数据库初始化开始 ----");
     let app_data_dir = app.path().app_data_dir().expect("无法获取路径");
     std::fs::create_dir_all(&app_data_dir).ok();
@@ -48,11 +48,8 @@ pub fn init_db(app: &mut App) -> Result<(), String> {
     let db = sled::open(app_data_dir.join("gegeminini_sled")).expect("sled init failure");
     let db_arc = Arc::new(db);
 
-    // 3. 注入到全局状态
-    app.manage(AppState { db: db_arc.clone() });
-
     println!(" ---- 数据库初始化完成 ----");
-    Ok(())
+    Ok(db_arc)
 }
 
 #[tauri::command]

@@ -115,5 +115,11 @@ pub type GeminiSink = SplitSink<WsStream, Message>;
 
 pub struct GeminiSession {
     pub ws_sender: Arc<Mutex<GeminiSink>>,
-    pub record_stream: Option<cpal::Stream>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum GeminiCommand {
+    Start { api_key: String },
+    SendAudio(Vec<u8>),
+    Stop,
 }

@@ -1,6 +1,5 @@
 use crate::chat::get_messages;
-use crate::models::GeminiStruct;
-use crate::models::Page;
+use crate::models::{GeminiCommand, GeminiSession, GeminiStruct, Page};
 use chrono::{Local, Utc};
 use serde_json::{json, Value};
 
@@ -58,4 +57,24 @@ pub fn parse_gemini_response(response: &Value) -> Result<GeminiStruct, String> {
         finish_reason,
         ..Default::default()
     })
+}
+
+pub async fn init_gemini_manager(mut rx: tokio::sync::mpsc::UnboundedReceiver<GeminiCommand>) {
+    let mut session: Option<GeminiSession> = None;
+
+    while let Some(cmd) = rx.recv().await {
+        match cmd {
+            GeminiCommand::Start { api_key } => {
+                // 连接逻辑...
+            }
+            GeminiCommand::SendAudio(data) => {
+                if let Some(ref mut s) = session {
+                    // 发送逻辑...
+                }
+            }
+            GeminiCommand::Stop => {
+                session = None;
+            }
+        }
+    }
 }
