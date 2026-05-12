@@ -7,7 +7,7 @@ mod request;
 mod socket;
 mod voice;
 use crate::gemini::init_gemini_manager;
-use crate::models::GeminiCommand;
+use crate::models::{AudioState, GeminiCommand};
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 use tokio::sync::mpsc;

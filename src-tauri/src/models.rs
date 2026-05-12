@@ -123,3 +123,7 @@ pub enum GeminiCommand {
     SendAudio(Vec<u8>),
     Stop,
 }
+
+pub struct AudioState {
+    pub record_stream: std::sync::Mutex<Option<cpal::Stream>>,
+}

@@ -1,9 +1,13 @@
+use crate::models::GeminiCommand;
+use crate::AppState;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 #[tauri::command]
-pub async fn trigger_recording(file_path: String) -> Result<(), String> {
-    // Here you would implement the logic to start recording audio using cpal and hound.
-    // This is a placeholder implementation.
+pub async fn trigger_recording(
+    state: tauri::State<'_, AppState>,
+    file_path: String,
+) -> Result<(), String> {
+    let tx = state.gemini_tx.clone();
     let host = cpal::default_host();
     let device = host
         .default_input_device()
@@ -25,9 +29,8 @@ pub async fn trigger_recording(file_path: String) -> Result<(), String> {
         .build_input_stream(
             &config.into(),
             move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                for &sample in data {
-                    writer.write_sample(sample).unwrap();
-                }
+                let bytes: Vec<u8> = data.iter().flat_map(|&f| f.to_le_bytes()).collect();
+                let _ = tx.send(GeminiCommand::SendAudio(bytes));
             },
             move |err| {
                 eprintln!("An error occurred on the input audio stream: {}", err);
