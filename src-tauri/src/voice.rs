@@ -1,12 +1,15 @@
 use crate::models::GeminiCommand;
 use crate::AppState;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use tauri::Manager;
 
 #[tauri::command]
 pub async fn trigger_recording(
     state: tauri::State<'_, AppState>,
-    file_path: String,
+    app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
+    let app_data_dir = app_handle.path().app_data_dir().expect("无法获取路径");
+    let file_path = app_data_dir.join("recording.wav");
     let tx = state.gemini_tx.clone();
     let host = cpal::default_host();
     let device = host

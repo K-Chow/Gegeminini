@@ -4,8 +4,9 @@ import { useState } from 'react'
 const Voice = () => {
   const [isRecording, setIsRecording] = useState(false)
   const handleStartRecording = async () => {
-    invoke('start_recording')
+    invoke('trigger_recording')
       .then(res => {
+        setIsRecording(true)
         console.log(res)
       })
       .catch(err => {
@@ -15,8 +16,11 @@ const Voice = () => {
 
   return (
     <div className="max-h-full flex flex-col h-screen max-w-full">
-      <div className="p-4">
-        <button onClick={handleStartRecording}>
+      <div className="p-4 flex justify-center items-center h-full">
+        <button
+          className="w-36 h-36 btn btn-square btn-primary"
+          onClick={handleStartRecording}
+        >
           {isRecording ? 'Stop voice recording' : 'Start voice recording'}
         </button>
       </div>
