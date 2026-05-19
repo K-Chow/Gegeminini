@@ -1,5 +1,6 @@
 use crate::models::GeminiCommand;
 use crate::AppState;
+use crate::AudioState;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -73,6 +74,9 @@ pub async fn trigger_recording(
 }
 
 #[tauri::command]
-pub async fn stop_recording() -> Result<(), String> {
+pub async fn stop_recording(audio_state: tauri::State<'_, AudioState>) -> Result<(), String> {
+    if let Some(tx) = audio_state.stop_tx.lock().unwrap().take() {
+        let _ = tx.send(());
+    }
     Ok(())
 }

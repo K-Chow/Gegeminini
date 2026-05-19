@@ -47,6 +47,7 @@ pub fn run() {
             config::get_sys_config,
             config::delete_data,
             voice::trigger_recording,
+            voice::stop_recording,
             chat::response_messages,
         ])
         .run(tauri::generate_context!())
