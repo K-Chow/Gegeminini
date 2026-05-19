@@ -2,7 +2,7 @@ use crate::models::GeminiCommand;
 use crate::AppState;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::sync::{Arc, Mutex};
-use tauri::async_runtime::spawn;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::Manager;
 
 #[tauri::command]
@@ -11,7 +11,11 @@ pub async fn trigger_recording(
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
     let app_data_dir = app_handle.path().app_data_dir().expect("无法获取路径");
-    let file_path = app_data_dir.join("recording.wav");
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let file_path = app_data_dir.join(format!("recording_{}.wav", timestamp));
     let tx = state.gemini_tx.clone();
     let host = cpal::default_host();
     let device = host
@@ -24,7 +28,7 @@ pub async fn trigger_recording(
     let spec = hound::WavSpec {
         channels: config.channels(),
         sample_rate: config.sample_rate().0,
-        bits_per_sample: 16,
+        bits_per_sample: 32,
         sample_format: hound::SampleFormat::Float,
     };
 
@@ -50,22 +54,15 @@ pub async fn trigger_recording(
                 },
                 None,
             )
-            .map_err(|e| format!("无法构建音频流: {}", e))?; // <-- 关键解包
+            .map_err(|e| format!("无法构建音频流: {}", e))?;
 
         stream.play().map_err(|e| format!("无法启动录音: {}", e))?;
 
-        std::thread::sleep(std::time::Duration::from_secs(5));
-
-        // 4. 5秒后，主动销毁流，释放硬件
-        drop(stream);
-
-        // 5. 闭合 WAV 文件
         if let Ok(w) = Arc::try_unwrap(writer_arc) {
             if let Ok(writer) = w.into_inner() {
                 writer
                     .finalize()
                     .map_err(|e| format!("WAV闭合失败: {}", e))?;
-                println!("WAV 文件已成功保存并闭合！");
             }
         }
 

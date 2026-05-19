@@ -2,7 +2,7 @@ use futures_util::stream::SplitSink;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::net::TcpStream;
-use tokio::sync::Mutex;
+use tokio::sync::{oneshot, Mutex};
 use tokio_tungstenite::{tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -124,6 +124,12 @@ pub enum GeminiCommand {
     Stop,
 }
 
+#[derive(Clone)]
+pub struct AppState {
+    pub db: Arc<sled::Db>,
+    pub gemini_tx: tokio::sync::mpsc::UnboundedSender<GeminiCommand>,
+}
+
 pub struct AudioState {
-    pub record_stream: std::sync::Mutex<Option<cpal::Stream>>,
+    pub stop_tx: std::sync::Mutex<Option<oneshot::Sender<()>>>,
 }

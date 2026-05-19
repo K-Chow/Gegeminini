@@ -7,19 +7,12 @@ mod request;
 mod socket;
 mod voice;
 use crate::gemini::init_gemini_manager;
-use crate::models::{AudioState, GeminiCommand};
+use crate::models::{AppState, AudioState, GeminiCommand};
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 use tokio::sync::mpsc;
 
-use crate::config::{init_data, init_db};
-
-#[derive(Clone)] //Enable to clone app state
-pub struct AppState {
-    pub db: Arc<sled::Db>,
-    pub gemini_tx: tokio::sync::mpsc::UnboundedSender<GeminiCommand>,
-}
-
+use crate::config::{init_data, init_db}; //Enable to clone app state
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let (gemini_tx, gemini_rx) = mpsc::unbounded_channel::<GeminiCommand>();
@@ -29,6 +22,10 @@ pub fn run() {
     tauri::Builder::default()
         .setup(move |app| {
             let db_arc = init_db(app).unwrap();
+
+            app.manage(AudioState {
+                stop_tx: std::sync::Mutex::new(None),
+            });
 
             app.manage(AppState {
                 db: db_arc,
