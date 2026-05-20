@@ -9,8 +9,15 @@ use tauri::Manager;
 #[tauri::command]
 pub async fn trigger_recording(
     state: tauri::State<'_, AppState>,
+    AudioState: tauri::State<'_, AudioState>,
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
+    {
+        if AudioState.stop_tx.lock().unwrap().is_some() {
+            return Err("正在录音中...".into());
+        }
+    }
+
     let app_data_dir = app_handle.path().app_data_dir().expect("无法获取路径");
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
