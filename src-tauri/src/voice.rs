@@ -5,15 +5,16 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::Manager;
+use tokio::sync::oneshot;
 
 #[tauri::command]
 pub async fn trigger_recording(
     state: tauri::State<'_, AppState>,
-    AudioState: tauri::State<'_, AudioState>,
+    audio_state: tauri::State<'_, AudioState>,
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
     {
-        if AudioState.stop_tx.lock().unwrap().is_some() {
+        if audio_state.stop_tx.lock().unwrap().is_some() {
             return Err("正在录音中...".into());
         }
     }
@@ -44,6 +45,9 @@ pub async fn trigger_recording(
     let writer_arc = Arc::new(Mutex::new(writer));
     let writer_clone = writer_arc.clone();
 
+    let (stop_tx, stop_rx) = oneshot::channel::<()>();
+
+    *audio_state.stop_tx.lock().unwrap() = Some(stop_tx);
     std::thread::spawn(move || -> Result<(), String> {
         let stream = device
             .build_input_stream(
@@ -65,6 +69,9 @@ pub async fn trigger_recording(
             .map_err(|e| format!("无法构建音频流: {}", e))?;
 
         stream.play().map_err(|e| format!("无法启动录音: {}", e))?;
+
+        let _ = stop_rx.blocking_recv();
+        drop(stream);
 
         if let Ok(w) = Arc::try_unwrap(writer_arc) {
             if let Ok(writer) = w.into_inner() {
