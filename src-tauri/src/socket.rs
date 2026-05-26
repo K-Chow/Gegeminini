@@ -1,91 +1,66 @@
 use crate::constants::GEMINI_STREAM_URL;
+use crate::models::GeminiCommand;
 use crate::request::get_api_key;
 use crate::AppState;
 use futures_util::{SinkExt, StreamExt};
-use std::sync::{Arc, Mutex};
+use tokio::sync::Mutex;
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
 type GeminiStream =
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
 
-/// 建立与 Gemini Live API 的 WebSocket 连接并完成配置初始化
-pub async fn connect_to_gemini(api_key: &str) -> Result<GeminiStream, String> {
-    // 1. 构造 WebSocket URL (Gemini v1alpha 实时双向流端点)
-    let url_str = format!("{}{}", GEMINI_STREAM_URL, api_key);
-
-    println!("正在连接到 Gemini Live API...");
-
-    // 2. 建立 wss 安全连接
-    let (mut ws_stream, response) = connect_async(&url_str)
-        .await
-        .map_err(|e| format!("WebSocket 连接失败: {}", e))?;
-
-    println!("连接成功！HTTP 状态码: {}", response.status());
-
-    // 3. 构造第一帧初始化配置 (Setup Frame)
-    let setup_json = serde_json::json!({
-        "setup": {
-            "model": "models/gemini-2.5-flash",
-            "generation_config": {
-                "response_modalities": ["AUDIO"],
-                "speech_config": {
-                    "voice_config": {
-                        "prebuilt_voice_config": {
-                            "voice_name": "Puck"
-                        }
-                    }
-                }
-            }
-        },
-        "client_content": null
-    })
-    .to_string();
-    ws_stream
-        .send(Message::Text(setup_json.into()))
-        .await
-        .map_err(|e| format!("发送初始化配置失败: {}", e))?;
-
-    println!("初始化握手消息已发送，会话已建立。");
-
-    Ok(ws_stream)
-}
-
 #[tauri::command]
-pub async fn start_session(state: tauri::State<'_, AppState>) -> Result<(), String> {
-    let api_key = get_api_key(&state)?;
-    let ws_stream = connect_to_gemini(&api_key).await?;
+pub async fn connect_gemini(
+    state: tauri::State<'_, AppState>,
+    app_handle: tauri::AppHandle,
+) -> Result<String, String> {
+    let mut tx_guard = state.gemini_tx.lock().await;
 
-    // 2. 拆分读写端
-    let (ws_sender, mut ws_receiver) = ws_stream.split();
+    // 1. 防御性检查：确保不重复建立物理连接
+    if tx_guard.is_some() {
+        return Ok("已经处于连接状态，无需重复连接。".to_string());
+    }
 
-    // 3. 将发送端用 Arc<Mutex<...>> 包裹，存入你的全局 Tauri State
-    let shared_sender = Arc::new(Mutex::new(ws_sender));
+    println!("🌐 触发连接 Action：开始构建网络基础设施...");
 
-    // 4. 开启一个独立的后台异步任务，专门用来“监听”并播放 Gemini 发回的声音
+    // 2. 建立内存中的跨线程通信管道 (MPSC)
+    // new_tx 由外部（未来的录音 Action）持有，用来发射数据
+    // new_rx 由下面的后台网络协程持有，用来接收数据并吐给网络
+    let (new_tx, mut new_rx) = tokio::sync::mpsc::unbounded_channel::<GeminiCommand>();
+
+    // 3. 产生一个纯粹的常驻后台异步任务，负责死守网络链路
     tokio::spawn(async move {
-        while let Some(message) = ws_receiver.next().await {
-            match message {
-                Ok(Message::Text(text)) => {
-                    // 这里接收到了来自 Gemini 的服务器消息 (BidiGenerateContentServerMessage)
-                    // TODO: 解析里面的音频数据并喂给你的播放器 (Rodio/Sink)
-                    println!("收到 Gemini 响应 (大小: {} 字符)", text.len());
+        println!("⚡ [网络任务] 开始向 Gemini API 终点发起物理握手 (例如 WebSocket)...");
+
+        // -------------------------------------------------------------
+        // 🔴 这里放置你真实的物理网络连接代码，例如：
+        // let url = "wss://generativelanguage.googleapis.com/...";
+        // let (mut ws_stream, _) = tokio_tungstenite::connect_async(url).await.unwrap();
+        // -------------------------------------------------------------
+
+        println!("✅ [网络任务] 物理连接建立成功！网络协程进入常驻挂起状态，等待发信指令...");
+
+        // 物理通路建好了，现在让这个协程在后台安安静静地挂起（Sleep/Wait）
+        // 只有当外面的管道有东西丢进来时，它才会醒来，不消耗任何 CPU
+        while let Some(command) = new_rx.recv().await {
+            match command {
+                GeminiCommand::SendAudio(bytes) => {
+                    // 只有未来有动作往 tx 里扔数据时，这里才会被唤醒并发送
+                    // ws_stream.send(Message::Binary(bytes)).await.ok();
+                    println!(
+                        "📭 [网络任务] 接收到外来投递，成功将 {} 字节音频注入物理网卡",
+                        bytes.len()
+                    );
                 }
-                Ok(Message::Close(_)) => {
-                    println!("Gemini 关闭了连接");
-                    break;
+                GeminiCommand::Start { .. } | GeminiCommand::Stop | GeminiCommand::CloseSession => {
+                    // Handle other command types
                 }
-                Err(e) => {
-                    eprintln!("接收 Gemini 数据时出错: {}", e);
-                    break;
-                }
-                _ => {}
             }
         }
     });
 
-    // 5. 将发送端保存进状态中，后续 start_record 指令就可以利用它实时发送麦克风数据了
-    // let mut session_guard = state.session_lock.lock().unwrap();
-    // *session_guard = Some(shared_sender);
+    // 4. 将发信端安全地寄存在全局状态中，方便后续任何其他 Action 随时借用
+    *tx_guard = Some(new_tx);
 
-    Ok(())
+    Ok("Gemini 物理连接已建立，网络常驻任务已就绪。".to_string())
 }

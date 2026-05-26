@@ -14,7 +14,7 @@ pub async fn trigger_recording(
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
     {
-        if audio_state.stop_tx.lock().unwrap().is_some() {
+        if audio_state.stop_tx.lock().await.is_some() {
             return Err("正在录音中...".into());
         }
     }
@@ -25,7 +25,7 @@ pub async fn trigger_recording(
         .unwrap()
         .as_secs();
     let file_path = app_data_dir.join(format!("recording_{}.wav", timestamp));
-    let tx = state.gemini_tx.clone();
+    let tx = state.gemini_tx.lock().await.as_ref().unwrap().clone();
     let host = cpal::default_host();
     let device = host
         .default_input_device()
@@ -47,7 +47,7 @@ pub async fn trigger_recording(
 
     let (stop_tx, stop_rx) = oneshot::channel::<()>();
 
-    *audio_state.stop_tx.lock().unwrap() = Some(stop_tx);
+    *audio_state.stop_tx.lock().await = Some(stop_tx);
     std::thread::spawn(move || -> Result<(), String> {
         let stream = device
             .build_input_stream(
@@ -89,7 +89,7 @@ pub async fn trigger_recording(
 
 #[tauri::command]
 pub async fn stop_recording(audio_state: tauri::State<'_, AudioState>) -> Result<(), String> {
-    if let Some(tx) = audio_state.stop_tx.lock().unwrap().take() {
+    if let Some(tx) = audio_state.stop_tx.lock().await.take() {
         let _ = tx.send(());
     }
     Ok(())
