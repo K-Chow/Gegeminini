@@ -134,6 +134,6 @@ pub struct AppState {
 }
 
 pub struct AudioState {
-    pub stop_tx: Mutex<Option<oneshot::Sender<()>>>,
-    pub stop_rx: Mutex<Option<oneshot::Receiver<()>>>,
+    pub stop_tx: std::sync::Mutex<Option<oneshot::Sender<()>>>,
+    pub stop_rx: std::sync::Mutex<Option<oneshot::Receiver<()>>>,
 }

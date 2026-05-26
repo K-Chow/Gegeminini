@@ -21,8 +21,8 @@ pub fn run() {
             let db_arc = init_db(app).unwrap();
 
             app.manage(AudioState {
-                stop_tx: Mutex::new(None),
-                stop_rx: Mutex::new(None),
+                stop_tx: std::sync::Mutex::new(None),
+                stop_rx: std::sync::Mutex::new(None),
             });
 
             app.manage(AppState {
