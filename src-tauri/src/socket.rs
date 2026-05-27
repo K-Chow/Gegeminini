@@ -1,6 +1,6 @@
 use crate::constants::GEMINI_STREAM_URL;
 use crate::models::GeminiCommand;
-use crate::request::get_api_key;
+use crate::request::{get_api_key, get_model};
 use crate::AppState;
 use futures_util::{SinkExt, StreamExt};
 use tokio::sync::Mutex;
@@ -28,6 +28,15 @@ pub async fn connect_gemini(
     // new_rx 由下面的后台网络协程持有，用来接收数据并吐给网络
     let (new_tx, mut new_rx) = tokio::sync::mpsc::unbounded_channel::<GeminiCommand>();
 
+    let setup_msg = serde_json::json!({
+        "setup": {
+            "model": get_model(&state),
+            "generationConfig": {
+                "responseModalities": ["AUDIO"], // 告诉它你需要它用语音回答你
+            }
+        }
+    });
+
     // 3. 产生一个纯粹的常驻后台异步任务，负责死守网络链路
     tokio::spawn(async move {
         println!("⚡ [网络任务] 开始向 Gemini API 终点发起物理握手 (例如 WebSocket)...");
@@ -44,7 +53,10 @@ pub async fn connect_gemini(
             match command {
                 GeminiCommand::SendAudio(bytes) => {
                     // 只有未来有动作往 tx 里扔数据时，这里才会被唤醒并发送
-                    ws_stream.send(Message::Binary(bytes.into())).await.ok();
+                    ws_stream
+                        .send(Message::Text(setup_msg.to_string().into()))
+                        .await
+                        .ok();
                 }
                 GeminiCommand::Start { .. } | GeminiCommand::Stop | GeminiCommand::CloseSession => {
                     // Handle other command types

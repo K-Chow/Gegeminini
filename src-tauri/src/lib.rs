@@ -47,6 +47,7 @@ pub fn run() {
             voice::trigger_recording,
             voice::stop_recording,
             chat::response_messages,
+            socket::connect_gemini,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
