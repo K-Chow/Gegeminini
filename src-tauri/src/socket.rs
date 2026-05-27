@@ -32,11 +32,9 @@ pub async fn connect_gemini(
     tokio::spawn(async move {
         println!("⚡ [网络任务] 开始向 Gemini API 终点发起物理握手 (例如 WebSocket)...");
 
-        // -------------------------------------------------------------
-        // 🔴 这里放置你真实的物理网络连接代码，例如：
-        // let url = "wss://generativelanguage.googleapis.com/...";
-        // let (mut ws_stream, _) = tokio_tungstenite::connect_async(url).await.unwrap();
-        // -------------------------------------------------------------
+        let (mut ws_stream, _) = tokio_tungstenite::connect_async(GEMINI_STREAM_URL)
+            .await
+            .unwrap();
 
         println!("✅ [网络任务] 物理连接建立成功！网络协程进入常驻挂起状态，等待发信指令...");
 
@@ -46,11 +44,7 @@ pub async fn connect_gemini(
             match command {
                 GeminiCommand::SendAudio(bytes) => {
                     // 只有未来有动作往 tx 里扔数据时，这里才会被唤醒并发送
-                    // ws_stream.send(Message::Binary(bytes)).await.ok();
-                    println!(
-                        "📭 [网络任务] 接收到外来投递，成功将 {} 字节音频注入物理网卡",
-                        bytes.len()
-                    );
+                    ws_stream.send(Message::Binary(bytes.into())).await.ok();
                 }
                 GeminiCommand::Start { .. } | GeminiCommand::Stop | GeminiCommand::CloseSession => {
                     // Handle other command types
